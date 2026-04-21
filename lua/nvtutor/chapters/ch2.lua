@@ -297,37 +297,35 @@ M.lessons = {
     title = 'Blockwise Visual Mode',
     description = 'Ctrl-v enters Visual Block mode. You select a rectangular column of text across multiple lines. Use I or A to insert the same text on every selected line simultaneously.',
     challenges = {
-      -- Challenge 1: select a column
+      -- Challenge 1: select a column of visible characters
       h.visual({
         command = '<C-v>',
-        instruction = 'Select the column of numbers (column 7, "1", "2", "3") across all three lines.',
+        instruction = 'Select the ">" markers at the start of all 3 lines using block select (Ctrl-v then 2j).',
         lines = {
-          'item 1: apple',
-          'item 2: banana',
-          'item 3: cherry',
+          '> Buy groceries',
+          '> Walk the dog',
+          '> Read a book',
         },
-        start = { 1, 5 },
-        target_region = { { 1, 5 }, { 3, 5 } },
+        start = { 1, 0 },
+        target_region = { { 1, 0 }, { 3, 0 } },
         optimal = 3,
         time = 6.0,
-        hint = 'Ctrl-v then 2j extends the block selection two lines down',
+        hint = 'Ctrl-v starts block mode at the ">". Press 2j to extend down 2 lines.',
       }),
-      -- Challenge 2: select leading whitespace column
+      -- Challenge 2: select a rectangular block of text
       h.visual({
         command = '<C-v>',
-        instruction = 'Select the first two columns (spaces) of indentation across lines 2-4.',
+        instruction = 'Select the 3-letter status codes ("200", "404", "500") in the first column across all 3 lines.',
         lines = {
-          'function run()',
-          '  local a = 1',
-          '  local b = 2',
-          '  local c = 3',
-          'end',
+          '200 OK',
+          '404 Not Found',
+          '500 Server Error',
         },
-        start = { 2, 0 },
-        target_region = { { 2, 0 }, { 4, 1 } },
+        start = { 1, 0 },
+        target_region = { { 1, 0 }, { 3, 2 } },
         optimal = 4,
-        time = 6.0,
-        hint = 'Ctrl-v then l then 2j — block is 2 cols wide, 3 rows tall',
+        time = 8.0,
+        hint = 'Ctrl-v then 2l selects 3 columns wide. Then 2j extends down 2 lines.',
       }),
       -- Challenge 3: block delete a column of characters
       h.editing({
