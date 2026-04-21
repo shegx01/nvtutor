@@ -47,6 +47,7 @@ ends with a review round mixing commands from prior chapters.
 During challenges, the following keybindings are available:
 
     CTRL-L          Retry the current challenge (reset buffer)
+    CTRL-H          Toggle hint (show/hide)
     CTRL-N          Skip the current challenge
 
 ==============================================================================

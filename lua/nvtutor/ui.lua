@@ -398,12 +398,46 @@ function M.show_challenge_prompt(challenge_num, total, instruction)
     '  ' .. string.rep('─', math.max(#header, #instruction + 2)),
     '  ' .. instruction,
     '',
-    '  Ctrl-L: retry  |  Ctrl-N: skip',
+    '  Ctrl-L: retry  |  Ctrl-H: hint  |  Ctrl-N: skip',
   }
 
   -- Place at bottom so it doesn't cover the practice buffer text
   local handle = M.show_floating(lines, { position = 'bottom', border = 'rounded' })
   return handle
+end
+
+-- ---------------------------------------------------------------------------
+-- 6b. Hint toggle
+-- ---------------------------------------------------------------------------
+
+-- Track active hint float so we can toggle it
+M._hint_handle = nil
+
+---Show a hint float. If already visible, close it (toggle).
+---@param hint_text string
+function M.toggle_hint(hint_text)
+  -- If hint is showing, dismiss it
+  if M._hint_handle then
+    close_float(M._hint_handle)
+    M._hint_handle = nil
+    return
+  end
+  -- Show hint in a centered float
+  local lines = {
+    '',
+    '  💡 ' .. hint_text,
+    '',
+    '  [Ctrl-H to dismiss]',
+  }
+  M._hint_handle = M.show_floating(lines, { position = 'center', border = 'rounded' })
+end
+
+---Close the hint if visible (called on challenge finish)
+function M.close_hint()
+  if M._hint_handle then
+    close_float(M._hint_handle)
+    M._hint_handle = nil
+  end
 end
 
 -- ---------------------------------------------------------------------------

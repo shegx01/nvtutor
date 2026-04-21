@@ -12,7 +12,6 @@ M._state = {
   on_key_id = nil,
   active_challenge = nil,
   completion_cb = nil,
-  hint_timer = nil,
 }
 
 ---Start counting keystrokes using vim.on_key()
@@ -35,11 +34,6 @@ function M.stop_counting()
   if M._state.on_key_id then
     vim.on_key(nil, M._state.on_key_id)
     M._state.on_key_id = nil
-  end
-  if M._state.hint_timer then
-    M._state.hint_timer:stop()
-    M._state.hint_timer:close()
-    M._state.hint_timer = nil
   end
 end
 
@@ -296,12 +290,11 @@ function M.start_challenge(buf, win, challenge_def, challenge_num, total, on_don
     M._finish_challenge(buf, true)
   end, { buffer = buf, nowait = true, desc = 'NVTutor: Skip challenge' })
 
-  -- Set up hint timer (30 seconds of inactivity)
+  -- Hint toggle — Ctrl-H shows/hides the hint
   if challenge_def.hint then
-    M._state.hint_timer = vim.loop.new_timer()
-    M._state.hint_timer:start(30000, 0, vim.schedule_wrap(function()
-      ui().show_feedback_message('Hint: ' .. challenge_def.hint, function() end)
-    end))
+    vim.keymap.set('n', '<C-h>', function()
+      ui().toggle_hint(challenge_def.hint)
+    end, { buffer = buf, nowait = true, desc = 'NVTutor: Toggle hint' })
   end
 
   -- Create completion handler
@@ -366,7 +359,11 @@ function M._finish_challenge(buf, skipped)
 
   -- Clean up keymaps
   pcall(vim.keymap.del, 'n', '<C-l>', { buffer = buf })
+  pcall(vim.keymap.del, 'n', '<C-h>', { buffer = buf })
   pcall(vim.keymap.del, 'n', '<C-n>', { buffer = buf })
+
+  -- Dismiss hint if showing
+  ui().close_hint()
 
   -- Close challenge prompt (preserve practice buffer)
   ui().close_floats()

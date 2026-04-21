@@ -70,6 +70,7 @@ During challenges:
 | Key      | Action                              |
 |----------|-------------------------------------|
 | `Ctrl-L` | Retry the current challenge         |
+| `Ctrl-H` | Toggle hint (show/hide)             |
 | `Ctrl-N` | Skip to the next challenge          |
 
 No `setup()` call needed. Install the plugin and run `:NVTutor`.
