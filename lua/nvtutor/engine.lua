@@ -177,19 +177,29 @@ M.validators = {
 
   visual = function(challenge_def, buf, on_complete)
     return {
-      events = { 'ModeChanged' },
-      pattern = '*:n',
+      -- CursorMoved fires while in visual mode as the selection extends.
+      -- This lets us detect the correct selection immediately — the user
+      -- doesn't need to press Esc first.
+      events = { 'CursorMoved' },
+      -- Use buffer-local autocmd (no pattern needed)
       check = function()
         vim.schedule(function()
-          -- Guard: only fire for the practice buffer
-          if vim.api.nvim_get_current_buf() ~= buf then return end
-          -- Guard: only validate if buffer unchanged (no operator applied)
+          -- Only check while in a visual mode (v, V, or Ctrl-V)
+          local mode = vim.api.nvim_get_mode().mode
+          if not mode:match('^[vV\22]') then return end
+          -- Guard: buffer unchanged
           local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
           if not M.lines_match(lines, challenge_def.buffer_lines) then
             return
           end
-          local vstart = vim.fn.getpos("'<")
-          local vend = vim.fn.getpos("'>")
+          -- getpos('v') = visual start, getpos('.') = cursor (visual end)
+          -- Both return 1-indexed columns
+          local vstart = vim.fn.getpos('v')
+          local vend = vim.fn.getpos('.')
+          -- Ensure start <= end (user might select backwards)
+          if vstart[2] > vend[2] or (vstart[2] == vend[2] and vstart[3] > vend[3]) then
+            vstart, vend = vend, vstart
+          end
           if M.selection_matches(vstart, vend, challenge_def.target) then
             on_complete()
           end
