@@ -216,7 +216,7 @@ M.validators = {
 
   vim_language = function(challenge_def, buf, on_complete)
     return {
-      events = { 'TextChanged' },
+      events = { 'TextChanged', 'TextChangedI' },
       check = function()
         vim.schedule(function()
           local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
