@@ -1,0 +1,129 @@
+*nvtutor.txt*    Interactive Vim tutorial plugin for Neovim
+
+==============================================================================
+CONTENTS                                                    *nvtutor-contents*
+
+    1. Introduction .............. |nvtutor-introduction|
+    2. Requirements .............. |nvtutor-requirements|
+    3. Commands .................. |nvtutor-commands|
+    4. Chapters .................. |nvtutor-chapters|
+    5. Scoring ................... |nvtutor-scoring|
+    6. Highlights ................ |nvtutor-highlights|
+    7. Progress .................. |nvtutor-progress|
+
+==============================================================================
+1. INTRODUCTION                                         *nvtutor-introduction*
+
+NVTutor is an interactive Neovim plugin that teaches Vim commands through
+a hybrid "teach then challenge" format. Each lesson starts with a brief
+explanation, then presents 3-5 interactive challenges where you perform
+real Vim commands on highlighted targets in the buffer.
+
+You are scored on keystrokes and time, earning bronze, silver, or gold
+mastery tiers per command. Chapters unlock sequentially, and each chapter
+ends with a review round mixing commands from prior chapters.
+
+==============================================================================
+2. REQUIREMENTS                                         *nvtutor-requirements*
+
+- Neovim 0.10 or later
+- No external dependencies
+
+==============================================================================
+3. COMMANDS                                                 *nvtutor-commands*
+
+                                                                    *:NVTutor*
+:NVTutor            Launch NVTutor. First-time users start at Chapter 1,
+                    Lesson 1. Returning users see the chapter menu with a
+                    "Continue where you left off" option.
+
+:NVTutor menu       Show the chapter selection menu.
+
+:NVTutor reset      Reset all progress. Prompts for confirmation.
+
+:NVTutor stats      Show mastery statistics: commands learned, tier
+                    breakdown, total time spent.
+
+During challenges, the following keybindings are available:
+
+    CTRL-L          Retry the current challenge (reset buffer)
+    CTRL-N          Skip the current challenge
+
+==============================================================================
+4. CHAPTERS                                                 *nvtutor-chapters*
+
+Chapter 1: First Steps ~
+    Vertical Movement, Horizontal Movement, Introduction to Modes,
+    Text Objects, Word Based Movement
+
+Chapter 2: Editing Essentials ~
+    Yanking and Putting, Deletion, Visual Character Mode,
+    Visual Line Mode, Blockwise Visual Mode, Indentation
+
+Chapter 3: The Vim Language ~
+    Verb + Text Object, Verb + Modifier + Text Object
+
+Chapter 4: Insert & Change Mastery ~
+    Insert Lines, Paste Precisely, Replace Character, Substitute,
+    Insert and Append, Line Based Insert and Append,
+    Delete and Change Lines
+
+Chapter 5: Precision Movement ~
+    Find and Till, Vim Language with Find and Till,
+    Start and End of Line
+
+Chapter 6: Document Navigation ~
+    Document Movements, Line Number Movement, Paragraph Navigation
+
+Chapter 7: Search ~
+    Patterns, Search Word
+
+Chapter 8: Power Commands ~
+    Dealing With Numbers, Macros, Matching Brackets, Dot Command,
+    Join Lines, Lowercase and Uppercase
+
+==============================================================================
+5. SCORING                                                   *nvtutor-scoring*
+
+Each challenge is scored based on keystrokes used and time taken.
+The fewer keystrokes and faster the completion, the higher the tier:
+
+    Gold   - Keystrokes <= optimal AND time <= optimal * 1.5
+    Silver - Keystrokes <= optimal * 1.5 AND time <= optimal * 2.5
+    Bronze - Challenge completed (any keystrokes/time)
+
+Mastery tiers are tracked per command and persist between sessions.
+
+==============================================================================
+6. HIGHLIGHTS                                             *nvtutor-highlights*
+
+NVTutor defines the following highlight groups. Override them in your
+config to customize the appearance:
+
+    *NVTutorTarget*     Target to navigate to or act on
+    *NVTutorSuccess*    Correct action feedback
+    *NVTutorHint*       Explanation and hint text
+    *NVTutorError*      Wrong action feedback
+    *NVTutorBronze*     Bronze tier indicator
+    *NVTutorSilver*     Silver tier indicator
+    *NVTutorGold*       Gold tier indicator
+
+Example: Override the target highlight >lua
+    vim.api.nvim_set_hl(0, 'NVTutorTarget', { bg = '#FF0000' })
+<
+
+==============================================================================
+7. PROGRESS                                                 *nvtutor-progress*
+
+Progress is saved to: >
+    ~/.local/share/nvim/tutor/progress.json
+<
+
+This file tracks chapter completion, lesson progress, mastery tiers per
+command, and your current position for resume functionality.
+
+Run |:NVTutor| reset to clear all progress.
+Run |:checkhealth| nvtutor to verify the progress file.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

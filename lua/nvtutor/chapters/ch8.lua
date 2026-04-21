@@ -1,0 +1,673 @@
+local h = require('nvtutor.chapters.helpers')
+local M = {}
+
+M.title = 'Power Commands'
+M.description = 'Turbocharge your editing with macros, the dot command, number operations, and more.'
+
+-- ─── shared buffer content ────────────────────────────────────────────────────
+
+local number_lines = {
+  'local version   = 1',
+  'local max_retry = 3',
+  'local timeout   = 10',
+  'local pool_size = 4',
+  'local threshold = 100',
+}
+
+local macro_lines = {
+  'const firstName = "alice"',
+  'const lastName  = "bob"',
+  'const cityName  = "chicago"',
+  'const teamName  = "devs"',
+  'const codeName  = "falcon"',
+}
+
+local bracket_lines = {
+  'function process(data) {',
+  '  if (data.valid) {',
+  '    const result = transform(data.payload);',
+  '    return [result, null];',
+  '  } else {',
+  '    return [null, new Error("invalid")];',
+  '  }',
+  '}',
+  '',
+  'const output = process({ valid: true, payload: 42 });',
+}
+
+local dot_lines = {
+  'The API endpoint is http not https.',
+  'The fallback URL uses http as well.',
+  'All internal calls also use http for now.',
+  'We must update every http reference before launch.',
+}
+
+local join_lines = {
+  'const greeting =',
+  '  "Hello, world!";',
+  'const farewell =',
+  '  "Goodbye, world!";',
+  'const message =',
+  '  greeting + " " + farewell;',
+}
+
+local case_lines = {
+  'the quick brown fox',
+  'JUMPS OVER THE LAZY DOG',
+  'a Mixed Case Line Here',
+  'another line to transform',
+}
+
+-- ─── Lesson 1 — Dealing With Numbers (Ctrl-a, Ctrl-x) ────────────────────────
+
+local lesson1 = {
+  title = 'Dealing With Numbers',
+  explanation = {
+    'Ctrl-a  — increment the number under (or nearest after) the cursor by 1.',
+    'Ctrl-x  — decrement the number under the cursor by 1.',
+    '',
+    '{n}Ctrl-a  — increment by n  (e.g. 10<C-a> adds 10).',
+    '{n}Ctrl-x  — decrement by n.',
+    '',
+    'Vim recognises decimal, hex (0x…), octal (0…), and binary (0b…) literals.',
+    'The cursor does not need to be ON the digit — just before it on the same line.',
+  },
+  challenges = {
+    -- 1. Ctrl-a increments by 1
+    h.power({
+      command = '<C-a>',
+      instruction = 'Line 1: cursor is on "version". Increment the value from 1 to 2 with Ctrl-a.',
+      lines = number_lines,
+      start = { 1, 6 },
+      expected = {
+        'local version   = 2',
+        'local max_retry = 3',
+        'local timeout   = 10',
+        'local pool_size = 4',
+        'local threshold = 100',
+      },
+      optimal = 1,
+      hint = 'Ctrl-a finds the next number on the line and increments it.',
+    }),
+    -- 2. Ctrl-x decrements by 1
+    h.power({
+      command = '<C-x>',
+      instruction = 'Line 2: cursor is at the start. Decrement max_retry from 3 to 2 with Ctrl-x.',
+      lines = number_lines,
+      start = { 2, 0 },
+      expected = {
+        'local version   = 1',
+        'local max_retry = 2',
+        'local timeout   = 10',
+        'local pool_size = 4',
+        'local threshold = 100',
+      },
+      optimal = 1,
+      hint = 'Ctrl-x finds the next number on the line and decrements it.',
+    }),
+    -- 3. Count + Ctrl-a to add a larger amount
+    h.power({
+      command = '<C-a>',
+      instruction = 'Line 3: cursor at start. Increase timeout from 10 to 30 using a count with Ctrl-a.',
+      lines = number_lines,
+      start = { 3, 0 },
+      expected = {
+        'local version   = 1',
+        'local max_retry = 3',
+        'local timeout   = 30',
+        'local pool_size = 4',
+        'local threshold = 100',
+      },
+      optimal = 3,   -- 2, 0, <C-a>
+      hint = 'Prepend the count 20 before Ctrl-a: 20<C-a> adds 20 to the number.',
+    }),
+    -- 4. Count + Ctrl-x to subtract
+    h.power({
+      command = '<C-x>',
+      instruction = 'Line 5: cursor at start. Decrease threshold from 100 to 50 with a count and Ctrl-x.',
+      lines = number_lines,
+      start = { 5, 0 },
+      expected = {
+        'local version   = 1',
+        'local max_retry = 3',
+        'local timeout   = 10',
+        'local pool_size = 4',
+        'local threshold = 50',
+      },
+      optimal = 4,   -- 5, 0, <C-x>
+      hint = '50<C-x> subtracts 50 from the number on the line.',
+    }),
+    -- 5. Ctrl-a on pool_size with cursor before the digit
+    h.power({
+      command = '<C-a>',
+      instruction = 'Line 4: cursor is on "p" of "pool_size". Increment pool_size from 4 to 5 — cursor need not be on the digit.',
+      lines = number_lines,
+      start = { 4, 6 },
+      expected = {
+        'local version   = 1',
+        'local max_retry = 3',
+        'local timeout   = 10',
+        'local pool_size = 5',
+        'local threshold = 100',
+      },
+      optimal = 1,
+      hint = 'Ctrl-a searches rightward from the cursor on the same line for a number.',
+    }),
+  },
+}
+
+-- ─── Lesson 2 — Macros (q, @, @@) ────────────────────────────────────────────
+
+local lesson2 = {
+  title = 'Macros',
+  explanation = {
+    'q{reg}     — start recording a macro into register {reg} (a–z).',
+    'q          — stop recording.',
+    '@{reg}     — replay the macro stored in register {reg}.',
+    '@@         — replay the last-used macro.',
+    '{n}@{reg}  — replay the macro n times.',
+    '',
+    'Macros replay every keystroke you recorded: movements, edits, searches.',
+    'Design your macro to leave the cursor ready for the NEXT repetition.',
+  },
+  challenges = {
+    -- 1. Simple macro: capitalise first letter then advance
+    h.power({
+      command = 'q',
+      instruction = 'Lines 1-5 each have a lowercase value in quotes. Record a macro in register "a" that capitalises the first letter of the quoted word and moves to the next line. Run it on line 1, then replay with @a on lines 2-5.',
+      lines = macro_lines,
+      start = { 1, 0 },
+      expected = {
+        'const firstName = "Alice"',
+        'const lastName  = "Bob"',
+        'const cityName  = "Chicago"',
+        'const teamName  = "Devs"',
+        'const codeName  = "Falcon"',
+      },
+      optimal = 16,   -- qa f" w ~ q  then 4@a
+      count_macro_keys = true,
+      hint = 'qa starts recording. f" moves to quote, w jumps inside, ~ toggles case. q stops. Then 4@a replays 4 times.',
+    }),
+    -- 2. Macro with substitution pattern
+    h.power({
+      command = 'q',
+      instruction = 'Record a macro in "b" that changes "const" to "let" on the current line and moves down. Apply it across all 5 lines starting from line 1.',
+      lines = macro_lines,
+      start = { 1, 0 },
+      expected = {
+        'let firstName = "alice"',
+        'let lastName  = "bob"',
+        'let cityName  = "chicago"',
+        'let teamName  = "devs"',
+        'let codeName  = "falcon"',
+      },
+      optimal = 17,   -- qb ^cw let <Esc> j q  then 4@b
+      count_macro_keys = true,
+      hint = 'qb starts recording. ^cw replaces the first word, type "let", Esc, then j. q stops. 4@b finishes the rest.',
+    }),
+    -- 3. @@ to replay last macro
+    h.power({
+      command = '@@',
+      instruction = 'The macro in "a" capitalises a quoted word and moves down. After running @a on line 1, use @@ to apply the same macro to line 2.',
+      lines = macro_lines,
+      start = { 1, 0 },
+      expected = {
+        'const firstName = "Alice"',
+        'const lastName  = "Bob"',
+        'const cityName  = "chicago"',
+        'const teamName  = "devs"',
+        'const codeName  = "falcon"',
+      },
+      optimal = 14,   -- qa f" w ~ j q  then @a @@
+      count_macro_keys = true,
+      hint = 'Record the macro with qa. Run @a on line 1, then @@ replays it on line 2 with two keystrokes.',
+    }),
+    -- 4. Counted macro replay
+    h.power({
+      command = '@',
+      instruction = 'Record a macro in "c" that appends a semicolon to the end of the line and moves down. Use 5@c to run it across all 5 lines at once.',
+      lines = macro_lines,
+      start = { 1, 0 },
+      expected = {
+        'const firstName = "alice";',
+        'const lastName  = "bob";',
+        'const cityName  = "chicago";',
+        'const teamName  = "devs";',
+        'const codeName  = "falcon";',
+      },
+      optimal = 11,   -- qc A ; <Esc> j q  then 5@c
+      count_macro_keys = true,
+      hint = 'qc records. A enters Insert at end, type ";", Esc, j moves down, q stops. 5@c runs it 5 times.',
+    }),
+    -- 5. Macro that inserts surrounding quotes
+    h.power({
+      command = 'q',
+      instruction = 'Record a macro in "d" that wraps the first word on the line in backticks (`) and moves down. Apply to all 5 lines.',
+      lines = macro_lines,
+      start = { 1, 0 },
+      expected = {
+        '`const` firstName = "alice"',
+        '`const` lastName  = "bob"',
+        '`const` cityName  = "chicago"',
+        '`const` teamName  = "devs"',
+        '`const` codeName  = "falcon"',
+      },
+      optimal = 16,   -- qd ^ i ` <Esc> ea ` <Esc> j q  then 4@d
+      count_macro_keys = true,
+      hint = 'qd ^ i ` Esc ea ` Esc j q records the macro. 4@d replays it for the remaining lines.',
+    }),
+  },
+}
+
+-- ─── Lesson 3 — Matching Brackets (%) ────────────────────────────────────────
+
+local lesson3 = {
+  title = 'Matching Brackets',
+  explanation = {
+    '%  — jump to the bracket/delimiter that matches the one under the cursor.',
+    '',
+    'Supported pairs: ()  {}  []',
+    'Some plugins extend % to match HTML tags, do/end, if/end, etc.',
+    '',
+    'Useful workflows:',
+    '  d%  — delete from cursor to the matching bracket (inclusive).',
+    '  v%  — visually select from cursor to the matching bracket.',
+    '',
+    'If the cursor is NOT on a bracket, % jumps to the NEXT bracket on the line first.',
+  },
+  challenges = {
+    -- 1. % from opening to closing paren
+    h.movement({
+      command = '%',
+      instruction = 'Line 1: cursor is on the opening "{" of the function body. Jump to the matching closing "}" with %.',
+      lines = bracket_lines,
+      from = { 1, 21 },   -- '{' at end of 'function process(data) {'
+      to   = { 8, 0 },    -- matching '}' on line 8
+      optimal = 1,
+      hint = '% on an opening bracket jumps to the corresponding closing bracket.',
+    }),
+    -- 2. % from closing to opening
+    h.movement({
+      command = '%',
+      instruction = 'Line 8: cursor is on the closing "}". Jump back to the matching opening "{" on line 1 with %.',
+      lines = bracket_lines,
+      from = { 8, 0 },
+      to   = { 1, 21 },
+      optimal = 1,
+      hint = '% works in both directions — from closing bracket back to its opening.',
+    }),
+    -- 3. % on inner bracket
+    h.movement({
+      command = '%',
+      instruction = 'Line 2: cursor is on the "(" after "if". Jump to its matching ")" with %.',
+      lines = bracket_lines,
+      from = { 2, 5 },    -- '(' in 'if (data.valid)'
+      to   = { 2, 16 },   -- matching ')'
+      optimal = 1,
+      hint = '% jumps between matched pairs on the same line too.',
+    }),
+    -- 4. % on square bracket
+    h.movement({
+      command = '%',
+      instruction = 'Line 4: cursor is on the opening "[" of the return tuple. Jump to the closing "]" with %.',
+      lines = bracket_lines,
+      from = { 4, 11 },   -- '[' in 'return [result, null];'
+      to   = { 4, 24 },   -- ']'
+      optimal = 1,
+      hint = '% works on [] as well as () and {}.',
+    }),
+    -- 5. d% to delete a block
+    h.vim_language({
+      command = 'd%',
+      instruction = 'Line 10: cursor is on the "{" of the object literal. Delete the entire object with d%.',
+      lines = bracket_lines,
+      start = { 10, 24 },  -- '{' in '{ valid: true, payload: 42 }'
+      expected = {
+        'function process(data) {',
+        '  if (data.valid) {',
+        '    const result = transform(data.payload);',
+        '    return [result, null];',
+        '  } else {',
+        '    return [null, new Error("invalid")];',
+        '  }',
+        '}',
+        '',
+        'const output = process();',
+      },
+      optimal = 2,
+      hint = 'd% deletes from the cursor (the "{") through its matching "}" inclusive.',
+    }),
+  },
+}
+
+-- ─── Lesson 4 — Dot Command (.) ───────────────────────────────────────────────
+
+local lesson4 = {
+  title = 'Dot Command',
+  explanation = {
+    '.  — repeat the last change at the current cursor position.',
+    '',
+    '"Change" means: anything that modified the buffer.',
+    'Examples: dw, ciw, A<text><Esc>, x, r{char}, >>, etc.',
+    '',
+    'Workflow: make the change once, move to the next location, press ".".',
+    'Combine . with n (or ;) to race through repeated edits.',
+    '',
+    'The dot command does NOT repeat motions — only the editing action.',
+  },
+  challenges = {
+    -- 1. Replace a word with ciw then dot-repeat
+    h.power({
+      command = '.',
+      instruction = 'Lines 1-4 all contain "http". Change the first "http" to "https" with ciwhttps<Esc>, then press n. to fix the remaining three occurrences.',
+      lines = dot_lines,
+      start = { 1, 19 },   -- 'h' of first 'http'
+      expected = {
+        'The API endpoint is https not https.',
+        'The fallback URL uses https as well.',
+        'All internal calls also use https for now.',
+        'We must update every https reference before launch.',
+      },
+      optimal = 14,   -- ciwhttps<Esc> n. n. n.
+      hint = 'ciw changes the word under the cursor. After Esc, use n to jump to the next "http" and . to repeat the change.',
+    }),
+    -- 2. Append semicolons with A then dot-repeat
+    h.power({
+      command = '.',
+      instruction = 'Line 1 already has a semicolon. Lines 2-4 are missing one. Add a semicolon to line 2 with A;<Esc>, then use j. for lines 3 and 4.',
+      lines = {
+        'const alpha = 1;',
+        'const beta  = 2',
+        'const gamma = 3',
+        'const delta = 4',
+      },
+      start = { 2, 0 },
+      expected = {
+        'const alpha = 1;',
+        'const beta  = 2;',
+        'const gamma = 3;',
+        'const delta = 4;',
+      },
+      optimal = 7,   -- A ; <Esc> j. j.
+      hint = 'A moves to end of line and enters Insert. Type ";", Esc. Then j. repeats on the next line.',
+    }),
+    -- 3. Delete a trailing comment and dot-repeat
+    h.power({
+      command = '.',
+      instruction = 'Each line ends with a " -- TODO" comment. Delete it from line 1 with dtj (or f-d$), then move down and use . to repeat on lines 2-3.',
+      lines = {
+        'local alpha = 1 -- TODO',
+        'local beta  = 2 -- TODO',
+        'local gamma = 3 -- TODO',
+      },
+      start = { 1, 15 },   -- space before '-- TODO'
+      expected = {
+        'local alpha = 1',
+        'local beta  = 2',
+        'local gamma = 3',
+      },
+      optimal = 6,   -- d$ j. j.
+      hint = 'd$ deletes to end of line. j moves to the next line. . repeats the d$ deletion.',
+    }),
+    -- 4. Indent a block and dot-repeat
+    h.power({
+      command = '.',
+      instruction = 'Lines 2-4 are under-indented by one level. Indent line 2 with >> then use j. to indent lines 3 and 4.',
+      lines = {
+        'function foo() {',
+        'const x = 1;',
+        'const y = 2;',
+        'const z = 3;',
+        '}',
+      },
+      start = { 2, 0 },
+      expected = {
+        'function foo() {',
+        '  const x = 1;',
+        '  const y = 2;',
+        '  const z = 3;',
+        '}',
+      },
+      optimal = 5,   -- >> j. j.
+      hint = '>> indents the current line. j. repeats the indent on each subsequent line.',
+    }),
+    -- 5. Replace character and dot-repeat
+    h.power({
+      command = '.',
+      instruction = 'Lines 1-4 each contain a dash "-" that should be an underscore "_". Replace the first "-" on line 1 with r_, then use f-. on each subsequent line.',
+      lines = {
+        'my-module = require("my-module")',
+        'my-helper = require("my-helper")',
+        'my-config = require("my-config")',
+        'my-plugin = require("my-plugin")',
+      },
+      start = { 1, 2 },    -- first '-' on line 1
+      expected = {
+        'my_module = require("my-module")',
+        'my_helper = require("my-helper")',
+        'my_config = require("my-config")',
+        'my_plugin = require("my-plugin")',
+      },
+      check_lines = { 1, 2, 3, 4 },
+      optimal = 8,    -- r_ j f- . j f- . j f- .
+      hint = 'r_ replaces the character under the cursor. Move to the next occurrence with j then f-, then press . to repeat.',
+    }),
+  },
+}
+
+-- ─── Lesson 5 — Join Lines (J) ────────────────────────────────────────────────
+
+local lesson5 = {
+  title = 'Join Lines',
+  explanation = {
+    'J        — join the current line with the line below; inserts a single space between them.',
+    '{n}J     — join n lines together (e.g. 3J joins the current line + 2 below).',
+    'gJ       — join without inserting any space.',
+    '',
+    'J is an editing change, so . repeats it and u undoes it.',
+    '',
+    'Common use: collapse multi-line expressions back to one line.',
+  },
+  challenges = {
+    -- 1. J joins two lines
+    h.power({
+      command = 'J',
+      instruction = 'Lines 1-2 form a split assignment. Join them into one line with J.',
+      lines = join_lines,
+      start = { 1, 0 },
+      expected = {
+        'const greeting = "Hello, world!";',
+        'const farewell =',
+        '  "Goodbye, world!";',
+        'const message =',
+        '  greeting + " " + farewell;',
+      },
+      optimal = 1,
+      hint = 'J joins the current line with the next one, replacing the newline with a space.',
+    }),
+    -- 2. J twice to join three lines
+    h.power({
+      command = 'J',
+      instruction = 'Lines 1 and 2 are already one line in the expected output — now join lines 3-4 ("const farewell" and its value) into one line.',
+      lines = {
+        'const greeting = "Hello, world!";',
+        'const farewell =',
+        '  "Goodbye, world!";',
+        'const message =',
+        '  greeting + " " + farewell;',
+      },
+      start = { 2, 0 },
+      expected = {
+        'const greeting = "Hello, world!";',
+        'const farewell = "Goodbye, world!";',
+        'const message =',
+        '  greeting + " " + farewell;',
+      },
+      optimal = 1,
+      hint = 'Position on line 2, press J once to pull line 3 up.',
+    }),
+    -- 3. 3J to join three lines at once
+    h.power({
+      command = 'J',
+      instruction = 'Lines 4-6 (const message and two continuation lines) should become one line. Use 2J to join all three.',
+      lines = {
+        'const greeting = "Hello, world!";',
+        'const farewell = "Goodbye, world!";',
+        'const message =',
+        '  greeting +',
+        '  farewell;',
+      },
+      start = { 3, 0 },
+      expected = {
+        'const greeting = "Hello, world!";',
+        'const farewell = "Goodbye, world!";',
+        'const message = greeting + farewell;',
+      },
+      optimal = 2,   -- 2J
+      hint = '2J joins the current line with the 2 lines below it (3 lines total become 1).',
+    }),
+    -- 4. gJ join without space
+    h.power({
+      command = 'gJ',
+      instruction = 'Lines 1-2 form a URL split across two lines. Join them with gJ (no space inserted).',
+      lines = {
+        'https://example.com',
+        '/api/v1/users',
+        'https://example.com',
+        '/api/v1/posts',
+      },
+      start = { 1, 0 },
+      expected = {
+        'https://example.com/api/v1/users',
+        'https://example.com',
+        '/api/v1/posts',
+      },
+      optimal = 2,
+      hint = 'gJ joins without inserting a space, so the URL stays intact.',
+    }),
+    -- 5. J then dot-repeat
+    h.power({
+      command = 'J',
+      instruction = 'Four pairs of lines need joining. Join lines 1-2 with J, then use j. to join each subsequent pair.',
+      lines = {
+        'alpha =',
+        '  1',
+        'beta =',
+        '  2',
+        'gamma =',
+        '  3',
+        'delta =',
+        '  4',
+      },
+      start = { 1, 0 },
+      expected = {
+        'alpha = 1',
+        'beta = 2',
+        'gamma = 3',
+        'delta = 4',
+      },
+      optimal = 6,   -- J j. j. j.
+      hint = 'J joins the first pair. j moves past the joined line. . repeats the join on the next pair.',
+    }),
+  },
+}
+
+-- ─── Lesson 6 — Lowercase and Uppercase (~, gu, gU) ──────────────────────────
+
+local lesson6 = {
+  title = 'Lowercase and Uppercase',
+  explanation = {
+    '~    — toggle the case of the character under the cursor and advance.',
+    'gu{motion}  — make the text covered by {motion} lowercase.',
+    'gU{motion}  — make the text covered by {motion} uppercase.',
+    '',
+    'Examples:',
+    '  guiw  — lowercase the current word.',
+    '  gUiw  — uppercase the current word.',
+    '  gu$   — lowercase from cursor to end of line.',
+    '  gU0   — uppercase from cursor to the start of line.',
+    '',
+    'These are regular changes — "." repeats them, "u" undoes them.',
+  },
+  challenges = {
+    -- 1. ~ to toggle a single character
+    h.power({
+      command = '~',
+      instruction = 'Line 1: cursor is on "t" of "the". Toggle it to uppercase "T" with ~.',
+      lines = case_lines,
+      start = { 1, 0 },
+      expected = {
+        'The quick brown fox',
+        'JUMPS OVER THE LAZY DOG',
+        'a Mixed Case Line Here',
+        'another line to transform',
+      },
+      optimal = 1,
+      hint = '~ toggles the case of one character and moves the cursor forward.',
+    }),
+    -- 2. gUiw to uppercase a word
+    h.power({
+      command = 'gU',
+      instruction = 'Line 3: cursor is on "Mixed". Uppercase the whole word with gUiw.',
+      lines = case_lines,
+      start = { 3, 2 },   -- 'M' of 'Mixed'
+      expected = {
+        'the quick brown fox',
+        'JUMPS OVER THE LAZY DOG',
+        'a MIXED Case Line Here',
+        'another line to transform',
+      },
+      optimal = 4,   -- gUiw
+      hint = 'gU is the operator. iw selects the inner word. Together they uppercase the word.',
+    }),
+    -- 3. guiw to lowercase a word
+    h.power({
+      command = 'gu',
+      instruction = 'Line 2: cursor is on "JUMPS". Lowercase just that word with guiw.',
+      lines = case_lines,
+      start = { 2, 0 },
+      expected = {
+        'the quick brown fox',
+        'jumps OVER THE LAZY DOG',
+        'a Mixed Case Line Here',
+        'another line to transform',
+      },
+      optimal = 4,   -- guiw
+      hint = 'gu is the lowercase operator. iw selects the inner word.',
+    }),
+    -- 4. gU$ to uppercase to end of line
+    h.power({
+      command = 'gU',
+      instruction = 'Line 4: cursor is on "t" of "to". Uppercase from the cursor to the end of the line with gU$.',
+      lines = case_lines,
+      start = { 4, 8 },   -- 't' of 'to'
+      expected = {
+        'the quick brown fox',
+        'JUMPS OVER THE LAZY DOG',
+        'a Mixed Case Line Here',
+        'another line TO TRANSFORM',
+      },
+      optimal = 3,   -- gU$
+      hint = 'gU$ applies uppercase from cursor to end of line.',
+    }),
+    -- 5. gu$ to lowercase entire line
+    h.power({
+      command = 'gu',
+      instruction = 'Line 2: cursor is at the start. Lowercase the entire line with gu$.',
+      lines = case_lines,
+      start = { 2, 0 },
+      expected = {
+        'the quick brown fox',
+        'jumps over the lazy dog',
+        'a Mixed Case Line Here',
+        'another line to transform',
+      },
+      optimal = 3,   -- gu$
+      hint = 'gu$ lowercases from the cursor all the way to the end of the line.',
+    }),
+  },
+}
+
+M.lessons = { lesson1, lesson2, lesson3, lesson4, lesson5, lesson6 }
+
+return M
