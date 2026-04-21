@@ -161,7 +161,7 @@ M.lessons = {
       -- Challenge 2: append text after cursor
       h.editing({
         command = 'a',
-        instruction = 'Cursor is on the "o" at the end of "Hello". Press a to start typing AFTER the cursor, then type ", Vim user" and press Esc.',
+        instruction = 'Turn "Hello" into "Hello, Vim user". Press a then type: , Vim user',
         lines = {
           'Hello',
           'Second line stays.',
