@@ -81,8 +81,18 @@ end
 function M.selection_matches(vstart, vend, target)
   -- getpos returns {bufnum, lnum, col, off} where col is 1-indexed
   -- Our target uses 0-indexed columns (matching nvim_win_set_cursor)
-  local sl, sc = vstart[2], vstart[3] - 1  -- convert to 0-indexed
-  local el, ec = vend[2], vend[3] - 1      -- convert to 0-indexed
+  local sl = vstart[2]
+  local el = vend[2]
+
+  -- In Visual Line mode (V), only the lines matter — columns are irrelevant
+  local mode = vim.api.nvim_get_mode().mode
+  if mode == 'V' then
+    return sl == target.start_line and el == target.end_line
+  end
+
+  -- Character and Block visual: check exact columns too
+  local sc = vstart[3] - 1  -- convert to 0-indexed
+  local ec = vend[3] - 1
   return sl == target.start_line and sc == target.start_col
      and el == target.end_line and ec == target.end_col
 end
