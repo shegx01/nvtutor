@@ -344,22 +344,13 @@ function M.show_lesson_intro(explanation_lines, on_dismiss)
   lines[#lines + 1] = ''
   lines[#lines + 1] = '  [Press any key to continue]'
 
+  -- Capture the current window BEFORE opening or focusing the float
+  local prev_win = vim.api.nvim_get_current_win()
+
   local handle = M.show_floating(lines, { position = 'top' })
 
   -- Focus the float so keypresses are captured
   vim.api.nvim_set_current_win(handle.win)
-
-  -- Remember the window behind the float so we can refocus it
-  local prev_win = vim.fn.win_getid(vim.fn.winnr('#'))
-  if prev_win == 0 or not vim.api.nvim_win_is_valid(prev_win) then
-    -- fallback: find the window showing the practice buffer
-    for _, w in ipairs(vim.api.nvim_list_wins()) do
-      if w ~= handle.win then
-        prev_win = w
-        break
-      end
-    end
-  end
 
   local dismissed = false
   local function dismiss()

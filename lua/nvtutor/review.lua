@@ -167,8 +167,19 @@ function M._run_challenge_sequence(buf, challenges, start_idx, review_type, chap
       progress.save(state)
     end
 
+    -- Find the window currently showing the practice buffer so setup_buffer
+    -- can position the cursor precisely (avoids using window 0 which may
+    -- be a float or the dashboard in LazyVim environments).
+    local practice_win = 0
+    for _, w in ipairs(vim.api.nvim_list_wins()) do
+      if vim.api.nvim_win_get_buf(w) == buf then
+        practice_win = w
+        break
+      end
+    end
+
     -- engine.start_challenge already shows the challenge prompt
-    engine.start_challenge(buf, challenge, idx, total, function(result)
+    engine.start_challenge(buf, practice_win, challenge, idx, total, function(result)
       if not result.skipped then
         progress.mark_challenge_complete(
           nil, nil, idx,

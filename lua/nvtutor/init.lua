@@ -138,27 +138,43 @@ function M.start_lesson(chapter_n, lesson_n)
 
   local buf = ui.create_scratch_buffer({})
   M._state.buf = buf
-  vim.api.nvim_set_current_buf(buf)
 
-  -- Set up quit handler
-  local augroup = vim.api.nvim_create_augroup('NVTutorSession', { clear = true })
-  vim.api.nvim_create_autocmd({ 'BufWinLeave', 'VimLeavePre' }, {
-    group = augroup,
-    buffer = buf,
-    callback = function()
-      M._on_quit()
-    end,
-  })
+  -- Use vim.schedule so our nvim_set_current_buf call runs after any
+  -- dashboard/startup autocmds (e.g. LazyVim TabNewEntered) have fired and
+  -- settled.  Without this, those autocmds run after us and replace the
+  -- window's buffer back to the dashboard.
+  vim.schedule(function()
+    -- Verify the buf is still valid (could have been wiped if something else
+    -- interfered before the scheduled callback ran)
+    if not vim.api.nvim_buf_is_valid(buf) then return end
 
-  -- Show lesson intro then start challenges
-  local intro_lines = lesson.explanation
-  if not intro_lines then
-    -- Chapters use 'description' as a single string; wrap it for display
-    intro_lines = type(lesson.description) == 'table' and lesson.description
-      or { lesson.description or '' }
-  end
-  ui.show_lesson_intro(intro_lines, function()
-    M.start_challenge_sequence(chapter_n, lesson_n, 1)
+    vim.api.nvim_set_current_buf(buf)
+    -- Store the window that is now showing the practice buffer so the engine
+    -- can target it precisely.
+    M._state.win = vim.api.nvim_get_current_win()
+
+    -- Set up quit handler — use VimLeavePre only; BufWinLeave is too
+    -- aggressive because LazyVim or other plugins may hide/show the buffer
+    -- legitimately, and firing _on_quit() then wipes the whole session.
+    local augroup = vim.api.nvim_create_augroup('NVTutorSession', { clear = true })
+    vim.api.nvim_create_autocmd('VimLeavePre', {
+      group = augroup,
+      buffer = buf,
+      callback = function()
+        M._on_quit()
+      end,
+    })
+
+    -- Show lesson intro then start challenges
+    local intro_lines = lesson.explanation
+    if not intro_lines then
+      -- Chapters use 'description' as a single string; wrap it for display
+      intro_lines = type(lesson.description) == 'table' and lesson.description
+        or { lesson.description or '' }
+    end
+    ui.show_lesson_intro(intro_lines, function()
+      M.start_challenge_sequence(chapter_n, lesson_n, 1)
+    end)
   end)
 end
 
@@ -183,7 +199,7 @@ function M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx)
   local challenge_def = lesson.challenges[challenge_idx]
   local total = #lesson.challenges
 
-  engine.start_challenge(M._state.buf, challenge_def, challenge_idx, total, function(result)
+  engine.start_challenge(M._state.buf, M._state.win, challenge_def, challenge_idx, total, function(result)
     if result.skipped then
       -- Move to next challenge
       M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)

@@ -89,7 +89,8 @@ end
 ---Set up the practice buffer for a challenge
 ---@param buf number
 ---@param challenge_def table
-function M.setup_buffer(buf, challenge_def)
+---@param win? number  explicit window handle showing buf (falls back to current window)
+function M.setup_buffer(buf, challenge_def, win)
   vim.api.nvim_set_option_value('modifiable', true, { buf = buf })
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, challenge_def.buffer_lines)
 
@@ -97,10 +98,12 @@ function M.setup_buffer(buf, challenge_def)
   local editable_types = { editing = true, vim_language = true, power = true }
   vim.api.nvim_set_option_value('modifiable', editable_types[challenge_def.type] or false, { buf = buf })
 
-  -- Position cursor
+  -- Position cursor using the explicit window handle when available so we
+  -- never accidentally position the cursor in a float or the dashboard.
+  local target_win = (win and vim.api.nvim_win_is_valid(win)) and win or 0
   local line = challenge_def.start_pos[1]
   local col = challenge_def.start_pos[2]
-  vim.api.nvim_win_set_cursor(0, { line, col })
+  vim.api.nvim_win_set_cursor(target_win, { line, col })
 
   -- Highlight target
   ui().clear_highlights(buf)
@@ -130,9 +133,10 @@ end
 ---Restore buffer to initial state for retry
 ---@param buf number
 ---@param challenge_def table
-function M.reset_buffer(buf, challenge_def)
+---@param win? number  explicit window handle (forwarded to setup_buffer)
+function M.reset_buffer(buf, challenge_def, win)
   vim.api.nvim_set_option_value('modifiable', true, { buf = buf })
-  M.setup_buffer(buf, challenge_def)
+  M.setup_buffer(buf, challenge_def, win)
 end
 
 ---Validator factories for each challenge type
@@ -229,16 +233,17 @@ M.validators = {
 
 ---Start a challenge
 ---@param buf number practice buffer
+---@param win number  window handle that is showing the practice buffer
 ---@param challenge_def table challenge definition
 ---@param challenge_num number current challenge number (1-indexed)
 ---@param total number total challenges in lesson
 ---@param on_done function callback({keystrokes, time, tier, skipped})
-function M.start_challenge(buf, challenge_def, challenge_num, total, on_done)
+function M.start_challenge(buf, win, challenge_def, challenge_num, total, on_done)
   M._state.active_challenge = challenge_def
   M._state.completion_cb = on_done
 
-  -- Set up buffer
-  M.setup_buffer(buf, challenge_def)
+  -- Set up buffer using the explicit window handle
+  M.setup_buffer(buf, challenge_def, win)
 
   -- Show challenge prompt
   ui().show_challenge_prompt(challenge_num, total, challenge_def.instruction)
@@ -251,7 +256,7 @@ function M.start_challenge(buf, challenge_def, challenge_num, total, on_done)
   -- Set up retry/skip keybindings
   vim.keymap.set('n', '<C-l>', function()
     M.stop_counting()
-    M.reset_buffer(buf, challenge_def)
+    M.reset_buffer(buf, challenge_def, win)
     M._state.keystroke_count = 0
     M._state.start_time = vim.loop.hrtime()
     M.start_counting(challenge_def)
