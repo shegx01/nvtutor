@@ -17,19 +17,58 @@ M._scratch_bufs = {}
 ---@param lines string[] Content lines (used for auto-sizing)
 ---@param opts table User options
 ---@return table nvim_open_win config
+---Soft-wrap a list of lines to fit within max_width.
+---Returns wrapped lines (for buffer content) and the actual max line width.
+---@param lines string[]
+---@param max_width number
+---@return string[] wrapped, number actual_width
+local function wrap_lines(lines, max_width)
+  local wrapped = {}
+  local actual_max = 0
+  for _, line in ipairs(lines) do
+    if #line <= max_width then
+      wrapped[#wrapped + 1] = line
+      if #line > actual_max then actual_max = #line end
+    else
+      -- Wrap at word boundaries
+      local remaining = line
+      while #remaining > max_width do
+        -- Find the last space within max_width
+        local cut = max_width
+        local space = remaining:sub(1, max_width):find('%s[^%s]*$')
+        if space and space > 1 then
+          cut = space
+        end
+        local chunk = remaining:sub(1, cut)
+        wrapped[#wrapped + 1] = chunk
+        if #chunk > actual_max then actual_max = #chunk end
+        remaining = '  ' .. remaining:sub(cut + 1):gsub('^%s+', '')
+      end
+      if #remaining > 0 then
+        wrapped[#wrapped + 1] = remaining
+        if #remaining > actual_max then actual_max = #remaining end
+      end
+    end
+  end
+  return wrapped, actual_max
+end
+
 local function make_float_config(lines, opts)
   opts = opts or {}
 
   local ui_width  = vim.o.columns
   local ui_height = vim.o.lines
 
-  -- Determine width
+  -- Cap float width to 70% of screen or explicit width
+  local max_float_width = opts.width or math.floor(ui_width * 0.7)
+  max_float_width = math.min(max_float_width, ui_width - 4)
+
+  -- Determine width from content (already wrapped by caller)
   local max_line = 0
   for _, l in ipairs(lines) do
     if #l > max_line then max_line = #l end
   end
-  local width  = opts.width  or math.max(max_line + 4, 30)
-  width = math.min(width, ui_width - 4)
+  local width = math.max(math.min(max_line + 2, max_float_width), 30)
 
   -- Determine height
   local height = opts.height or #lines
@@ -111,12 +150,17 @@ end
 ---@return table { buf: integer, win: integer }
 function M.show_floating(lines, opts)
   opts = opts or {}
-  local buf = M.create_scratch_buffer(lines)
-  local config = make_float_config(lines, opts)
+
+  -- Pre-wrap long lines so they fit the float and height is accurate
+  local max_w = opts.width or math.floor(vim.o.columns * 0.7)
+  local wrapped = wrap_lines(lines, max_w)
+
+  local buf = M.create_scratch_buffer(wrapped)
+  local config = make_float_config(wrapped, opts)
   local win = vim.api.nvim_open_win(buf, false, config)
 
-  -- Basic window appearance
-  vim.api.nvim_set_option_value('wrap',       false, { win = win })
+  -- Basic window appearance — wrap enabled for safety
+  vim.api.nvim_set_option_value('wrap',       true,  { win = win })
   vim.api.nvim_set_option_value('cursorline', false, { win = win })
   vim.api.nvim_set_option_value('number',     false, { win = win })
   vim.api.nvim_set_option_value('signcolumn', 'no',  { win = win })
