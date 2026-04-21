@@ -122,10 +122,10 @@ M.lessons = {
         time = 6.0,
         hint = '16l or break it into chunks',
       }),
-      -- Challenge 4: navigate to end of word then back
+      -- Challenge 4: navigate right then back left
       h.movement({
         command = 'hl',
-        instruction = 'From column 0 reach column 8 (the "x" in "box"), then return to column 5.',
+        instruction = 'Move right to the "b" in "box" (column 8), then back left to "m" in "my" (column 5). End on column 5.',
         lines = {
           'Pack my box with five dozen.',
         },
@@ -133,7 +133,7 @@ M.lessons = {
         to   = { 1, 5 },
         optimal = 4,
         time = 8.0,
-        hint = '8l then 3h — 4 keystrokes total. Later you\'ll learn faster ways with w and b.',
+        hint = '8l reaches column 8, then 3h goes back to column 5 — 4 keystrokes total.',
       }),
     },
   },
@@ -158,10 +158,10 @@ M.lessons = {
         time = 10.0,
         hint = 'i enters Insert mode; type your text; Esc returns to Normal',
       }),
-      -- Challenge 2: append at end of line
+      -- Challenge 2: append text after cursor
       h.editing({
         command = 'a',
-        instruction = 'The cursor is at the end of "Hello". Use a to append ", Vim user" after the cursor.',
+        instruction = 'Cursor is on the "o" at the end of "Hello". Press a to start typing AFTER the cursor, then type ", Vim user" and press Esc.',
         lines = {
           'Hello',
           'Second line stays.',
@@ -173,7 +173,7 @@ M.lessons = {
         },
         optimal = 12,
         time = 10.0,
-        hint = 'a (lowercase) appends after the cursor character',
+        hint = 'a enters Insert mode AFTER the character under the cursor. Type ", Vim user" then Esc.',
       }),
       -- Challenge 3: escape back to normal and verify position
       h.editing({
