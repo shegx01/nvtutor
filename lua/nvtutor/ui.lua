@@ -350,6 +350,8 @@ function M.show_lesson_intro(explanation_lines, on_dismiss)
 
   local handle = M.show_floating(lines, { position = 'center' })
 
+  -- Ensure we're in normal mode before focusing the float
+  vim.cmd('noautocmd stopinsert')
   -- Focus the float so keypresses are captured
   vim.api.nvim_set_current_win(handle.win)
 
@@ -365,7 +367,7 @@ function M.show_lesson_intro(explanation_lines, on_dismiss)
     if on_dismiss then vim.schedule(on_dismiss) end
   end
 
-  -- Map every printable key + special keys to dismiss
+  -- Map keys in BOTH normal and insert mode so dismiss works regardless
   local keys = {
     '<CR>', '<Space>', '<Esc>', '<Tab>',
     'a','b','c','d','e','f','g','h','i','j','k','l','m',
@@ -375,7 +377,8 @@ function M.show_lesson_intro(explanation_lines, on_dismiss)
     '0','1','2','3','4','5','6','7','8','9',
   }
   for _, k in ipairs(keys) do
-    map(handle.buf, 'n', k, dismiss, 'Dismiss intro')
+    map(handle.buf, 'n', k, dismiss, 'Dismiss')
+    map(handle.buf, 'i', k, dismiss, 'Dismiss')
   end
 end
 
@@ -471,6 +474,7 @@ function M.show_feedback_message(message, on_dismiss)
   }
 
   local handle = M.show_floating(lines, { position = 'center', border = 'rounded' })
+  vim.cmd('noautocmd stopinsert')
   vim.api.nvim_set_current_win(handle.win)
 
   local dismissed = false
@@ -491,6 +495,7 @@ function M.show_feedback_message(message, on_dismiss)
   }
   for _, k in ipairs(keys) do
     map(handle.buf, 'n', k, dismiss, 'Dismiss message')
+    map(handle.buf, 'i', k, dismiss, 'Dismiss message')
   end
 end
 

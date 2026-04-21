@@ -318,6 +318,14 @@ end
 function M._finish_challenge(buf, skipped)
   M.stop_counting()
 
+  -- Force back to normal mode — the user may still be in insert/visual mode
+  vim.cmd('noautocmd stopinsert')
+  -- Also escape visual mode if active
+  local mode = vim.api.nvim_get_mode().mode
+  if mode:match('^[vVsS\22]') then
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
+  end
+
   -- Clean up autocmds
   pcall(vim.api.nvim_del_augroup_by_name, 'NVTutorChallenge')
 
