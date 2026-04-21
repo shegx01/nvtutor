@@ -117,9 +117,10 @@ function M.start_lesson(chapter_n, lesson_n)
   state.current_challenge = 1
   progress.save(state)
 
-  -- Create scratch buffer
+  -- Create scratch buffer and display it in the current window
   local buf = ui.create_scratch_buffer({})
   M._state.buf = buf
+  vim.api.nvim_set_current_buf(buf)
 
   -- Set up quit handler
   local augroup = vim.api.nvim_create_augroup('NVTutorSession', { clear = true })

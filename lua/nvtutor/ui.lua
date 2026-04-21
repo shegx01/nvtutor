@@ -359,11 +359,27 @@ function M.show_lesson_intro(explanation_lines, on_dismiss)
   -- Focus the float so keypresses are captured
   vim.api.nvim_set_current_win(handle.win)
 
+  -- Remember the window behind the float so we can refocus it
+  local prev_win = vim.fn.win_getid(vim.fn.winnr('#'))
+  if prev_win == 0 or not vim.api.nvim_win_is_valid(prev_win) then
+    -- fallback: find the window showing the practice buffer
+    for _, w in ipairs(vim.api.nvim_list_wins()) do
+      if w ~= handle.win then
+        prev_win = w
+        break
+      end
+    end
+  end
+
   local dismissed = false
   local function dismiss()
     if dismissed then return end
     dismissed = true
     remove_float(handle)
+    -- Return focus to the practice buffer window
+    if prev_win and vim.api.nvim_win_is_valid(prev_win) then
+      vim.api.nvim_set_current_win(prev_win)
+    end
     if on_dismiss then vim.schedule(on_dismiss) end
   end
 
