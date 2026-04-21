@@ -98,9 +98,16 @@ function M.setup_buffer(buf, challenge_def, win)
   local editable_types = { editing = true, vim_language = true, power = true }
   vim.api.nvim_set_option_value('modifiable', editable_types[challenge_def.type] or false, { buf = buf })
 
-  -- Position cursor using the explicit window handle when available so we
-  -- never accidentally position the cursor in a float or the dashboard.
+  -- Configure the practice window for clear cursor visibility
   local target_win = (win and vim.api.nvim_win_is_valid(win)) and win or 0
+  vim.api.nvim_set_option_value('cursorline', true, { win = target_win })
+  vim.api.nvim_set_option_value('number', true, { win = target_win })
+  vim.api.nvim_set_option_value('relativenumber', true, { win = target_win })
+  vim.api.nvim_set_option_value('signcolumn', 'no', { win = target_win })
+  -- Scroll offset keeps the cursor away from the very top/bottom edge
+  vim.api.nvim_set_option_value('scrolloff', 3, { win = target_win })
+
+  -- Position cursor
   local line = challenge_def.start_pos[1]
   local col = challenge_def.start_pos[2]
   vim.api.nvim_win_set_cursor(target_win, { line, col })

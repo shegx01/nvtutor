@@ -152,10 +152,17 @@ function M.start_lesson(chapter_n, lesson_n)
   M._state.buf = buf
 
   -- Force display using nvim_win_set_buf on the current window.
-  -- This is the most direct API — no autocmds, no :buffer command.
   local win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(win, buf)
   M._state.win = win
+
+  -- Clean window appearance for the tutor
+  vim.api.nvim_set_option_value('number', true, { win = win })
+  vim.api.nvim_set_option_value('relativenumber', true, { win = win })
+  vim.api.nvim_set_option_value('cursorline', true, { win = win })
+  vim.api.nvim_set_option_value('signcolumn', 'no', { win = win })
+  vim.api.nvim_set_option_value('scrolloff', 3, { win = win })
+  vim.api.nvim_set_option_value('wrap', true, { win = win })
 
   -- Set up quit handler
   local augroup = vim.api.nvim_create_augroup('NVTutorSession', { clear = true })

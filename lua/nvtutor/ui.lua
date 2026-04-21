@@ -42,10 +42,11 @@ local function make_float_config(lines, opts)
   local row, col
 
   if position == 'top' then
-    row = 1
+    row = 0
     col = math.floor((ui_width - width) / 2)
   elseif position == 'bottom' then
-    row = ui_height - height - 4
+    -- Anchor to the bottom, leaving room for the status line and border
+    row = ui_height - height - 3
     col = math.floor((ui_width - width) / 2)
   else -- center
     row = math.floor((ui_height - height) / 2)
@@ -347,7 +348,7 @@ function M.show_lesson_intro(explanation_lines, on_dismiss)
   -- Capture the current window BEFORE opening or focusing the float
   local prev_win = vim.api.nvim_get_current_win()
 
-  local handle = M.show_floating(lines, { position = 'top' })
+  local handle = M.show_floating(lines, { position = 'center' })
 
   -- Focus the float so keypresses are captured
   vim.api.nvim_set_current_win(handle.win)
@@ -397,7 +398,8 @@ function M.show_challenge_prompt(challenge_num, total, instruction)
     '  Ctrl-L: retry  |  Ctrl-N: skip',
   }
 
-  local handle = M.show_floating(lines, { position = 'top', border = 'rounded' })
+  -- Place at bottom so it doesn't cover the practice buffer text
+  local handle = M.show_floating(lines, { position = 'bottom', border = 'rounded' })
   return handle
 end
 
