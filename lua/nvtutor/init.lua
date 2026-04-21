@@ -9,14 +9,30 @@ M._state = {
   win = nil,
 }
 
+function M._open_tab_if_needed()
+  -- Only open a new tab if the current buffer is not already a tutor scratch buffer
+  if M._state.active and M._state.buf and vim.api.nvim_buf_is_valid(M._state.buf) then
+    vim.api.nvim_set_current_buf(M._state.buf)
+    return
+  end
+  -- Check if we're in a normal file or dashboard — open a tab for isolation
+  local bufname = vim.api.nvim_buf_get_name(0)
+  local buftype = vim.bo.buftype
+  if bufname ~= '' or buftype ~= '' then
+    vim.cmd('tabnew')
+  end
+end
+
 function M.command(opts)
   local arg = opts.args and opts.args:match('^%s*(%S+)')
 
   if arg == 'menu' then
+    M._open_tab_if_needed()
     M.show_menu()
   elseif arg == 'reset' then
     M.reset()
   elseif arg == 'stats' then
+    M._open_tab_if_needed()
     M.show_stats()
   else
     M.launch()
@@ -32,6 +48,9 @@ function M.launch()
     return
   end
 
+  -- Open a dedicated tab — avoids conflicts with dashboards and user workspace
+  vim.cmd('tabnew')
+
   require('nvtutor.highlights').setup()
   local progress = require('nvtutor.progress')
   local state = progress.load()
@@ -43,6 +62,7 @@ function M.launch()
     local buf = ui_mod.create_scratch_buffer({})
     M._state.buf = buf
     M._state.active = true
+    vim.api.nvim_set_current_buf(buf)
     if state.review_state.type == 'gauntlet' then
       review.start_gauntlet(buf, function()
         local ps = progress.load()
@@ -66,20 +86,7 @@ function M.launch()
   end
 end
 
-function M._ensure_tutor_tab()
-  -- If we're on a dashboard or special buffer, open a new tab
-  local buftype = vim.bo.buftype
-  local filetype = vim.bo.filetype
-  local is_special = buftype ~= '' or filetype == 'alpha' or filetype == 'dashboard'
-    or filetype == 'snacks_dashboard' or filetype == 'starter' or filetype == 'lazy'
-  if is_special then
-    vim.cmd('tabnew')
-  end
-end
-
 function M.show_menu()
-  require('nvtutor.highlights').setup()
-  M._ensure_tutor_tab()
   local ui = require('nvtutor.ui')
   local chapters = require('nvtutor.chapters')
   local progress = require('nvtutor.progress')
@@ -129,8 +136,6 @@ function M.start_lesson(chapter_n, lesson_n)
   state.current_challenge = 1
   progress.save(state)
 
-  -- Ensure we're not on a dashboard
-  M._ensure_tutor_tab()
   local buf = ui.create_scratch_buffer({})
   M._state.buf = buf
   vim.api.nvim_set_current_buf(buf)
