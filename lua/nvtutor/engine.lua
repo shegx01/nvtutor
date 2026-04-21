@@ -79,9 +79,10 @@ end
 ---@param target table { start_line, start_col, end_line, end_col }
 ---@return boolean
 function M.selection_matches(vstart, vend, target)
-  -- getpos returns {bufnum, lnum, col, off}
-  local sl, sc = vstart[2], vstart[3]
-  local el, ec = vend[2], vend[3]
+  -- getpos returns {bufnum, lnum, col, off} where col is 1-indexed
+  -- Our target uses 0-indexed columns (matching nvim_win_set_cursor)
+  local sl, sc = vstart[2], vstart[3] - 1  -- convert to 0-indexed
+  local el, ec = vend[2], vend[3] - 1      -- convert to 0-indexed
   return sl == target.start_line and sc == target.start_col
      and el == target.end_line and ec == target.end_col
 end
