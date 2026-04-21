@@ -229,7 +229,7 @@ function M.show_menu(chapters_data, progress_state, on_select)
   local buf = M.create_scratch_buffer(lines)
   buf_set_option(buf, 'modifiable', false)
 
-  vim.api.nvim_set_current_buf(buf)
+  vim.cmd('noautocmd buffer ' .. buf)
 
   -- Highlight locked chapters with a dimmed group
   for i, chapter in ipairs(chapters_data) do
@@ -314,7 +314,7 @@ function M.show_lesson_menu(chapter_n, lessons_data, progress_state, on_select)
 
   local buf = M.create_scratch_buffer(lines)
   buf_set_option(buf, 'modifiable', false)
-  vim.api.nvim_set_current_buf(buf)
+  vim.cmd('noautocmd buffer ' .. buf)
 
   for i = 1, #lessons_data do
     local key = tostring(i)
@@ -552,7 +552,7 @@ function M.show_stats(progress_state)
 
   local buf = M.create_scratch_buffer(lines)
   buf_set_option(buf, 'modifiable', false)
-  vim.api.nvim_set_current_buf(buf)
+  vim.cmd('noautocmd buffer ' .. buf)
 
   -- Colour the mastery lines
   -- Line indices (0-based): gold=10, silver=11, bronze=12 after the header block

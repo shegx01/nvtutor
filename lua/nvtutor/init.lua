@@ -12,7 +12,7 @@ M._state = {
 function M._open_tab_if_needed()
   -- Only open a new tab if the current buffer is not already a tutor scratch buffer
   if M._state.active and M._state.buf and vim.api.nvim_buf_is_valid(M._state.buf) then
-    vim.api.nvim_set_current_buf(M._state.buf)
+    vim.cmd('noautocmd buffer ' .. M._state.buf)
     return
   end
   -- Check if we're in a normal file or dashboard — open a tab for isolation
@@ -42,14 +42,14 @@ end
 function M.launch()
   if M._state.active then
     if M._state.buf and vim.api.nvim_buf_is_valid(M._state.buf) then
-      vim.api.nvim_set_current_buf(M._state.buf)
+      vim.cmd('noautocmd buffer ' .. M._state.buf)
     end
     vim.notify('NVTutor is already active', vim.log.levels.INFO)
     return
   end
 
-  -- Open a dedicated tab — avoids conflicts with dashboards and user workspace
-  vim.cmd('tabnew')
+  -- Open a dedicated tab with noautocmd so dashboard plugins can't intercept
+  vim.cmd('noautocmd tabnew')
 
   require('nvtutor.highlights').setup()
   local progress = require('nvtutor.progress')
@@ -62,7 +62,7 @@ function M.launch()
     local buf = ui_mod.create_scratch_buffer({})
     M._state.buf = buf
     M._state.active = true
-    vim.api.nvim_set_current_buf(buf)
+    vim.cmd('noautocmd buffer ' .. buf)
     if state.review_state.type == 'gauntlet' then
       review.start_gauntlet(buf, function()
         local ps = progress.load()
@@ -139,42 +139,30 @@ function M.start_lesson(chapter_n, lesson_n)
   local buf = ui.create_scratch_buffer({})
   M._state.buf = buf
 
-  -- Use vim.schedule so our nvim_set_current_buf call runs after any
-  -- dashboard/startup autocmds (e.g. LazyVim TabNewEntered) have fired and
-  -- settled.  Without this, those autocmds run after us and replace the
-  -- window's buffer back to the dashboard.
-  vim.schedule(function()
-    -- Verify the buf is still valid (could have been wiped if something else
-    -- interfered before the scheduled callback ran)
-    if not vim.api.nvim_buf_is_valid(buf) then return end
+  -- Use noautocmd to force the buffer switch. This is the nuclear option
+  -- that bypasses ALL autocmds (dashboard, snacks, alpha, etc.) so no
+  -- plugin can intercept or replace our buffer.
+  vim.cmd('noautocmd buffer ' .. buf)
 
-    vim.api.nvim_set_current_buf(buf)
-    -- Store the window that is now showing the practice buffer so the engine
-    -- can target it precisely.
-    M._state.win = vim.api.nvim_get_current_win()
+  M._state.win = vim.api.nvim_get_current_win()
 
-    -- Set up quit handler — use VimLeavePre only; BufWinLeave is too
-    -- aggressive because LazyVim or other plugins may hide/show the buffer
-    -- legitimately, and firing _on_quit() then wipes the whole session.
-    local augroup = vim.api.nvim_create_augroup('NVTutorSession', { clear = true })
-    vim.api.nvim_create_autocmd('VimLeavePre', {
-      group = augroup,
-      buffer = buf,
-      callback = function()
-        M._on_quit()
-      end,
-    })
+  -- Set up quit handler
+  local augroup = vim.api.nvim_create_augroup('NVTutorSession', { clear = true })
+  vim.api.nvim_create_autocmd('VimLeavePre', {
+    group = augroup,
+    callback = function()
+      M._on_quit()
+    end,
+  })
 
-    -- Show lesson intro then start challenges
-    local intro_lines = lesson.explanation
-    if not intro_lines then
-      -- Chapters use 'description' as a single string; wrap it for display
-      intro_lines = type(lesson.description) == 'table' and lesson.description
-        or { lesson.description or '' }
-    end
-    ui.show_lesson_intro(intro_lines, function()
-      M.start_challenge_sequence(chapter_n, lesson_n, 1)
-    end)
+  -- Show lesson intro then start challenges
+  local intro_lines = lesson.explanation
+  if not intro_lines then
+    intro_lines = type(lesson.description) == 'table' and lesson.description
+      or { lesson.description or '' }
+  end
+  ui.show_lesson_intro(intro_lines, function()
+    M.start_challenge_sequence(chapter_n, lesson_n, 1)
   end)
 end
 
