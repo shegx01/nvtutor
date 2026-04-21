@@ -30,25 +30,25 @@ M.lessons = {
         time = 5.0,
         hint = 'yyp: yank line (yy) then put below (p)',
       }),
-      -- Challenge 2: yank a word and put after cursor
+      -- Challenge 2: yank a word and put it at end of line
       h.editing({
-        command = 'ywp',
-        instruction = 'The cursor is on "foo". Yank the word and paste a copy right after the space that follows it.',
+        command = 'yiw',
+        instruction = 'Yank the word "hello" and paste it at the end of the line.',
         lines = {
-          'foo bar baz',
+          'hello world',
         },
         start = { 1, 0 },
         expected = {
-          'foo foobar baz',
+          'hello worldhello',
         },
-        optimal = 4,
+        optimal = 5,
         time = 8.0,
-        hint = 'yw yanks a word including trailing space; p pastes after cursor',
+        hint = 'yiw yanks the inner word (no space), then $ to end of line, then p to paste after',
       }),
       -- Challenge 3: put before cursor with P
       h.editing({
         command = 'yyP',
-        instruction = 'Yank the second line then put a copy of it above the first line.',
+        instruction = 'Yank the current line and put a copy of it above.',
         lines = {
           'local x = 10',
           'local y = 20',
@@ -56,14 +56,14 @@ M.lessons = {
         },
         start = { 2, 0 },
         expected = {
-          'local y = 20',
           'local x = 10',
+          'local y = 20',
           'local y = 20',
           'local z = 30',
         },
         optimal = 3,
         time = 6.0,
-        hint = 'yyP: yank current line (yy), then P puts it above',
+        hint = 'yyP: yank current line (yy), then P puts it above the current line',
       }),
       -- Challenge 4: yank 2 lines and put them
       h.editing({
@@ -101,7 +101,7 @@ M.lessons = {
         lines = {
           'Change the colour of the background.',
         },
-        start = { 1, 13 },
+        start = { 1, 15 },
         expected = {
           'Change the color of the background.',
         },
@@ -179,9 +179,9 @@ M.lessons = {
         },
         start = { 1, 4 },
         target_region = { { 1, 4 }, { 1, 8 } },
-        optimal = 5,
+        optimal = 2,
         time = 6.0,
-        hint = 'v then llll extends the selection four characters right',
+        hint = 'v then e extends the selection to end of word — just 2 keystrokes!',
       }),
       -- Challenge 2: select across words
       h.visual({
@@ -192,9 +192,9 @@ M.lessons = {
         },
         start = { 1, 10 },
         target_region = { { 1, 10 }, { 1, 18 } },
-        optimal = 10,
+        optimal = 3,
         time = 8.0,
-        hint = 'v then move right with l or w to extend the selection',
+        hint = 'v then 2e extends the selection two word-ends — covering "brown fox"',
       }),
       -- Challenge 3: select and delete
       h.editing({
@@ -209,9 +209,9 @@ M.lessons = {
           'fix the off-by-one error',
           'return count - 1',
         },
-        optimal = 8,
+        optimal = 4,
         time = 8.0,
-        hint = 'v then 5l to select 6 chars, then d to delete',
+        hint = 'v then 5l selects "TODO: ", then d deletes it — 4 keystrokes total',
       }),
     },
   },
@@ -266,9 +266,9 @@ M.lessons = {
         expected = {
           'return process(data)',
         },
-        optimal = 4,
+        optimal = 3,
         time = 6.0,
-        hint = 'V selects line 1; j extends to line 2; d deletes both',
+        hint = 'Vjd — V selects line 1; j extends to line 2; d deletes both — 3 keystrokes',
       }),
       -- Challenge 4: select lines and move them with p
       h.editing({
@@ -285,9 +285,9 @@ M.lessons = {
           '  local z = 30',
           '  local y = 20',
         },
-        optimal = 4,
+        optimal = 3,
         time = 8.0,
-        hint = 'Vd cuts the line; move down; p pastes it below',
+        hint = 'Vdp — V selects, d cuts, p pastes below the next line — 3 keystrokes',
       }),
     },
   },
@@ -382,7 +382,7 @@ M.lessons = {
         lines = {
           'function total()',
           '  local sum = 0',
-          '      return sum',
+          '    return sum',
           'end',
         },
         start = { 3, 0 },
@@ -415,9 +415,9 @@ M.lessons = {
           '  io.write(i)',
           'end',
         },
-        optimal = 5,
+        optimal = 4,
         time = 8.0,
-        hint = 'V then 2j selects 3 lines; > indents them all',
+        hint = 'V2j> — V selects, 2j extends down 2 lines, > indents — 4 keystrokes',
       }),
       -- Challenge 4: auto-indent with ==
       h.editing({

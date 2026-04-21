@@ -85,12 +85,12 @@ local lesson1 = {
     -- 2. n to advance to next match
     h.search({
       command = 'n',
-      instruction = 'Search for "event" and then press n twice to reach the third occurrence on line 19.',
+      instruction = 'Search for "self" then press n to reach the second occurrence (line 8).',
       lines = pattern_lines,
       from = { 1, 0 },
-      to   = { 19, 23 },  -- 'event' in 'emit(event, ...)'  line 19
-      optimal = 9,         -- /event<CR> n n
-      hint = '/event<CR> lands on the first match. Press n to advance to the next match.',
+      to   = { 8, 2 },    -- 'self' in 'self.listeners = {}' on line 8
+      optimal = 7,         -- /self<CR>n  = 1+4+1+1 = 7
+      hint = '/self<CR> lands on line 7 (first match). Press n for the next.',
     }),
     -- 3. ? backward search
     h.search({
@@ -98,8 +98,8 @@ local lesson1 = {
       instruction = 'Cursor is on line 26. Search backward for "self" and land on its last occurrence above.',
       lines = pattern_lines,
       from = { 26, 0 },
-      to   = { 20, 12 },  -- 'self.listeners[event]' on line 20
-      optimal = 7,         -- ?self<CR>
+      to   = { 20, 14 },  -- 'self' in 'self.listeners[event]' on line 20
+      optimal = 6,         -- ?self<CR> = 6 keystrokes
       hint = '? searches upward (backward). The cursor lands on the nearest match above.',
     }),
     -- 4. N to reverse search direction
@@ -108,8 +108,8 @@ local lesson1 = {
       instruction = 'Search forward for "EventEmitter", then press N to jump back to the previous occurrence.',
       lines = pattern_lines,
       from = { 1, 0 },
-      to   = { 4, 0 },    -- line 4: 'EventEmitter.__index = EventEmitter'
-      optimal = 16,        -- /EventEmitter<CR> n N  (forward, advance, reverse)
+      to   = { 3, 6 },    -- line 3: 'local EventEmitter = {}' — N reverses back here
+      optimal = 16,        -- /EventEmitter<CR>nN = 1+12+1+1+1 = 16
       hint = 'After the initial search, n moves forward and N moves backward through matches.',
     }),
     -- 5. Combined / and n for multi-hop
@@ -118,8 +118,8 @@ local lesson1 = {
       instruction = 'Search for "callback" and press n to reach its second occurrence (line 16).',
       lines = pattern_lines,
       from = { 1, 0 },
-      to   = { 16, 34 },  -- 'table.insert(self.listeners[event], callback)' — second 'callback'
-      optimal = 12,        -- /callback<CR> n
+      to   = { 16, 38 },  -- 'callback' in 'table.insert(self.listeners[event], callback)'
+      optimal = 11,        -- /callback<CR>n = 1+8+1+1 = 11
       hint = '/callback<CR> finds the first match. One n brings you to the second.',
     }),
   },
@@ -143,32 +143,32 @@ local lesson2 = {
     -- 1. * to jump to next occurrence of word
     h.search({
       command = '*',
-      instruction = 'Cursor is on "config" in line 1. Press * to jump to the next occurrence of "config".',
+      instruction = 'Cursor is on "local" at line 1. Press * to jump to the next "local".',
       lines = word_lines,
-      from = { 1, 6 },    -- cursor on 'c' of 'config' in 'local config = ...'
-      to   = { 3, 8 },    -- 'local default_config' — next whole-word "config" match
+      from = { 1, 0 },    -- 'local' at start of line 1
+      to   = { 2, 0 },    -- 'local' at start of line 2
       optimal = 1,
-      hint = '* jumps forward to the next whole-word match. "config_path" is skipped (not a whole word).',
+      hint = '* searches forward for the exact whole word under the cursor.',
     }),
     -- 2. * then n to continue
     h.search({
       command = '*',
-      instruction = 'Cursor is on "config" in line 1. Press * then n to reach the second forward match of "config" (line 7).',
+      instruction = 'Cursor is on "local" at line 1. Press * then n to reach the third "local" (line 3).',
       lines = word_lines,
-      from = { 1, 6 },
-      to   = { 7, 19 },   -- 'return default_config' — second whole-word "config" match forward
+      from = { 1, 0 },    -- 'local' at start of line 1
+      to   = { 3, 0 },    -- 'local' at start of line 3
       optimal = 2,         -- *, n
-      hint = '* jumps to the first next match, n advances to the next one.',
+      hint = '* jumps to the first match, n advances to the next.',
     }),
     -- 3. # to jump backward
     h.search({
       command = '#',
-      instruction = 'Cursor is on "config" in line 17 ("local cfg = load_config(config_path)"). Press # to jump backward to the previous whole-word "config".',
+      instruction = 'Cursor is on "load_config" in line 17. Press # to jump backward to its definition on line 5.',
       lines = word_lines,
-      from = { 17, 16 },  -- 'config' inside 'load_config' — but load_config is one token; use col on 'config' that is whole word
-      to   = { 14, 9 },   -- 'return default_config' on line 14
+      from = { 17, 12 },  -- 'load_config' in 'load_config(config_path)'
+      to   = { 5, 15 },   -- 'local function load_config(path)' on line 5
       optimal = 1,
-      hint = '# searches backward. It stops only on whole-word matches of the token under your cursor.',
+      hint = '# searches backward for the whole word under the cursor.',
     }),
     -- 4. * on a function name
     h.search({
@@ -180,15 +180,15 @@ local lesson2 = {
       optimal = 1,
       hint = '* treats the entire word under the cursor. "load_config" is one token.',
     }),
-    -- 5. # then n to walk backward through all occurrences
+    -- 5. # then n to walk backward through occurrences
     h.search({
       command = '#',
-      instruction = 'Cursor is on "config_path" in line 17. Press # then n to reach the previous occurrence of "config_path" on line 2.',
+      instruction = 'Cursor is on "config_path" in line 17. Press # to jump backward to line 2.',
       lines = word_lines,
-      from = { 17, 21 },  -- 'config_path' in 'load_config(config_path)'
+      from = { 17, 24 },  -- 'config_path' starts at col 24
       to   = { 2, 6 },    -- 'local config_path = ...' on line 2
-      optimal = 2,         -- #, n
-      hint = '# goes to line 5 (function param). n continues backward and wraps to line 2.',
+      optimal = 1,         -- # directly reaches line 2 (only other occurrence)
+      hint = '# searches backward for the exact word under the cursor.',
     }),
   },
 }

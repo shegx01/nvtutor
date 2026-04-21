@@ -105,7 +105,7 @@ function M.validate()
         end
 
         -- Type-specific checks
-        local needs_target = { movement = true, search = true }
+        local needs_target = { movement = true, search = true, visual = true }
         local needs_expected = { editing = true, vim_language = true, power = true }
 
         if needs_target[c.type] and not c.target then

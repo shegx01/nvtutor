@@ -88,13 +88,30 @@ end
 ---@param opts table {command, instruction, lines, start, target_region, optimal, time?, hint?}
 ---@return table
 function M.visual(opts)
+  -- Normalize target_region from { {line,col}, {line,col} } to named fields
+  local region = opts.target_region
+  local target
+  if region then
+    if region.start_line then
+      -- Already in named format
+      target = region
+    elseif region[1] and region[2] then
+      -- Array format: { {start_line, start_col}, {end_line, end_col} }
+      target = {
+        start_line = region[1][1],
+        start_col  = region[1][2],
+        end_line   = region[2][1],
+        end_col    = region[2][2],
+      }
+    end
+  end
   return {
     type = 'visual',
     command = opts.command,
     instruction = opts.instruction,
     buffer_lines = opts.lines,
     start_pos = opts.start,
-    target = opts.target_region,
+    target = target,
     optimal_keystrokes = opts.optimal,
     optimal_time = opts.time or 5.0,
     hint = opts.hint,

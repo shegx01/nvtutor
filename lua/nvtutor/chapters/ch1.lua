@@ -131,9 +131,9 @@ M.lessons = {
         },
         from = { 1, 0 },
         to   = { 1, 5 },
-        optimal = 5,
+        optimal = 4,
         time = 8.0,
-        hint = '8l then 3h — or think of a shorter route using w and b later',
+        hint = '8l then 3h — 4 keystrokes total. Later you\'ll learn faster ways with w and b.',
       }),
     },
   },
@@ -227,7 +227,7 @@ M.lessons = {
       -- Challenge 3: w across punctuation
       h.movement({
         command = 'w',
-        instruction = 'Jump forward three words from "Pack" to land on "box".',
+        instruction = 'Jump forward two words from "Pack" to land on "box".',
         lines = {
           'Pack my box with five dozen jugs.',
         },
@@ -235,7 +235,7 @@ M.lessons = {
         to   = { 1, 8 },
         optimal = 2,
         time = 5.0,
-        hint = '3w jumps three words in one stroke',
+        hint = '2w jumps two words in one stroke',
       }),
     },
   },
@@ -280,9 +280,9 @@ M.lessons = {
         },
         from = { 1, 0 },
         to   = { 1, 14 },
-        optimal = 4,
+        optimal = 2,
         time = 6.0,
-        hint = '2we or wwe — reach "brown" with w then land its end with e',
+        hint = '3e jumps to the end of the third word — just 2 keystrokes!',
       }),
       -- Challenge 4: full word navigation across a longer line
       h.movement({
@@ -292,8 +292,8 @@ M.lessons = {
           'Pack my box with five dozen jugs.',
         },
         from = { 1, 0 },
-        to   = { 1, 27 },
-        optimal = 4,
+        to   = { 1, 26 },
+        optimal = 2,
         time = 8.0,
         hint = '5e or 5w then e — count words from the start',
       }),

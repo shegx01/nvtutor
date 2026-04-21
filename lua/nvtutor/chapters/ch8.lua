@@ -134,8 +134,8 @@ local lesson1 = {
         'local pool_size = 4',
         'local threshold = 50',
       },
-      optimal = 4,   -- 5, 0, <C-x>
-      hint = '50<C-x> subtracts 50 from the number on the line.',
+      optimal = 3,   -- 5, 0, <C-x> = 3 keystrokes
+      hint = '50<C-x> subtracts 50 from the number. Three keystrokes: 5, 0, Ctrl-x.',
     }),
     -- 5. Ctrl-a on pool_size with cursor before the digit
     h.power({
@@ -281,7 +281,7 @@ local lesson3 = {
       command = '%',
       instruction = 'Line 1: cursor is on the opening "{" of the function body. Jump to the matching closing "}" with %.',
       lines = bracket_lines,
-      from = { 1, 21 },   -- '{' at end of 'function process(data) {'
+      from = { 1, 23 },   -- '{' at end of 'function process(data) {'
       to   = { 8, 0 },    -- matching '}' on line 8
       optimal = 1,
       hint = '% on an opening bracket jumps to the corresponding closing bracket.',
@@ -292,7 +292,7 @@ local lesson3 = {
       instruction = 'Line 8: cursor is on the closing "}". Jump back to the matching opening "{" on line 1 with %.',
       lines = bracket_lines,
       from = { 8, 0 },
-      to   = { 1, 21 },
+      to   = { 1, 23 },
       optimal = 1,
       hint = '% works in both directions — from closing bracket back to its opening.',
     }),
@@ -321,7 +321,7 @@ local lesson3 = {
       command = 'd%',
       instruction = 'Line 10: cursor is on the "{" of the object literal. Delete the entire object with d%.',
       lines = bracket_lines,
-      start = { 10, 24 },  -- '{' in '{ valid: true, payload: 42 }'
+      start = { 10, 23 },  -- '{' in 'process({ valid: ... })'
       expected = {
         'function process(data) {',
         '  if (data.valid) {',
@@ -356,20 +356,26 @@ local lesson4 = {
     'The dot command does NOT repeat motions — only the editing action.',
   },
   challenges = {
-    -- 1. Replace a word with ciw then dot-repeat
+    -- 1. Append text with A then dot-repeat across lines
     h.power({
       command = '.',
-      instruction = 'Lines 1-4 all contain "http". Change the first "http" to "https" with ciwhttps<Esc>, then press n. to fix the remaining three occurrences.',
-      lines = dot_lines,
-      start = { 1, 19 },   -- 'h' of first 'http'
-      expected = {
-        'The API endpoint is https not https.',
-        'The fallback URL uses https as well.',
-        'All internal calls also use https for now.',
-        'We must update every https reference before launch.',
+      instruction = 'Add " -- checked" to the end of line 1 with A -- checked<Esc>. Then j. twice for lines 2-3.',
+      lines = {
+        'validate(input)',
+        'process(data)',
+        'render(output)',
+        'return result',
       },
-      optimal = 14,   -- ciwhttps<Esc> n. n. n.
-      hint = 'ciw changes the word under the cursor. After Esc, use n to jump to the next "http" and . to repeat the change.',
+      start = { 1, 0 },
+      expected = {
+        'validate(input) -- checked',
+        'process(data) -- checked',
+        'render(output) -- checked',
+        'return result',
+      },
+      optimal = 17,   -- A(1) + " -- checked"(11) + Esc(1) + j.(2) + j.(2) = 17
+      check_lines = { 1, 2, 3 },
+      hint = 'A enters Insert at end of line. Type " -- checked" then Esc. j moves down, . repeats.',
     }),
     -- 2. Append semicolons with A then dot-repeat
     h.power({
@@ -428,8 +434,8 @@ local lesson4 = {
         '  const z = 3;',
         '}',
       },
-      optimal = 5,   -- >> j. j.
-      hint = '>> indents the current line. j. repeats the indent on each subsequent line.',
+      optimal = 6,   -- >>(2) j.(2) j.(2) = 6
+      hint = '>> indents the current line. j. repeats on each subsequent line. Or use 3>> (3 keys).',
     }),
     -- 5. Replace character and dot-repeat
     h.power({
@@ -509,7 +515,7 @@ local lesson5 = {
     -- 3. 3J to join three lines at once
     h.power({
       command = 'J',
-      instruction = 'Lines 4-6 (const message and two continuation lines) should become one line. Use 2J to join all three.',
+      instruction = 'Lines 3-5 (const message and two continuation lines) should become one line. Use 3J to join all three.',
       lines = {
         'const greeting = "Hello, world!";',
         'const farewell = "Goodbye, world!";',
@@ -523,8 +529,8 @@ local lesson5 = {
         'const farewell = "Goodbye, world!";',
         'const message = greeting + farewell;',
       },
-      optimal = 2,   -- 2J
-      hint = '2J joins the current line with the 2 lines below it (3 lines total become 1).',
+      optimal = 2,   -- 3J (2 keystrokes: '3' and 'J')
+      hint = '3J joins 3 lines together (current line + 2 below).',
     }),
     -- 4. gJ join without space
     h.power({
@@ -566,7 +572,7 @@ local lesson5 = {
         'gamma = 3',
         'delta = 4',
       },
-      optimal = 6,   -- J j. j. j.
+      optimal = 7,   -- J(1) + j.(2) + j.(2) + j.(2) = 7
       hint = 'J joins the first pair. j moves past the joined line. . repeats the join on the next pair.',
     }),
   },
@@ -640,7 +646,7 @@ local lesson6 = {
       command = 'gU',
       instruction = 'Line 4: cursor is on "t" of "to". Uppercase from the cursor to the end of the line with gU$.',
       lines = case_lines,
-      start = { 4, 8 },   -- 't' of 'to'
+      start = { 4, 13 },  -- 't' of 'to' in 'another line to transform'
       expected = {
         'the quick brown fox',
         'JUMPS OVER THE LAZY DOG',

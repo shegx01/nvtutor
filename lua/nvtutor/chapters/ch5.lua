@@ -50,20 +50,20 @@ local lesson1 = {
     -- 1. f forward to a character
     h.movement({
       command = 'f',
-      instruction = 'Line 1: cursor is at column 0. Jump to the "e" in "error" using f.',
+      instruction = 'Line 1: jump to the "r" in "returns" using fr.',
       lines = find_lines,
       from = { 1, 0 },
-      to   = { 1, 19 },   -- 'e' of 'error' — "The function returns an e..."
-      optimal = 2,         -- fe
-      hint = 'fe finds the first "e" after the cursor. Use ; to advance to subsequent matches.',
+      to   = { 1, 13 },   -- 'r' of 'returns'
+      optimal = 2,         -- fr
+      hint = 'fr finds the first "r" after the cursor.',
     }),
     -- 2. F backward to a character
     h.movement({
       command = 'F',
-      instruction = 'Line 2: cursor starts at end of "world")". Jump back to the opening "(" with F.',
+      instruction = 'Line 2: cursor is at the closing ")". Jump back to the opening "(" with F.',
       lines = find_lines,
-      from = { 2, 24 },   -- positioned on the closing ')'
-      to   = { 2, 12 },   -- opening '('
+      from = { 2, 18 },   -- closing ')' in greet("world")
+      to   = { 2, 10 },   -- opening '(' in greet(
       optimal = 2,         -- F(
       hint = 'F( searches backward on the same line for "(".',
     }),
@@ -73,29 +73,29 @@ local lesson1 = {
       instruction = 'Line 3: cursor is at column 0. Move to just before the "=" in "timeout=30" using t.',
       lines = find_lines,
       from = { 3, 0 },
-      to   = { 3, 11 },   -- one before '=' in "timeout=30"  (col 12 is '=')
+      to   = { 3, 10 },   -- one before '=' ("timeout=30": t=4,i=5,m=6,e=7,o=8,u=9,t=10,=11)
       optimal = 2,         -- t=
       hint = 't= stops the cursor one character BEFORE the "=" sign.',
     }),
     -- 4. T backward (till, stop after char)
     h.movement({
       command = 'T',
-      instruction = 'Line 4: cursor is at the period at the end. Move back to just after the ":" with T.',
+      instruction = 'Line 4: cursor is at the period. Move back to just after the ":" with T.',
       lines = find_lines,
-      from = { 4, 53 },   -- period at the end
-      to   = { 4, 45 },   -- one after ':' (col 44 is ':')
+      from = { 4, 50 },   -- period at end of "done."
+      to   = { 4, 43 },   -- one after ':' ("colon: done." — colon is at col 42)
       optimal = 2,         -- T:
       hint = 'T: stops one character AFTER the ":" when searching backward.',
     }),
     -- 5. Chaining ; to repeat
     h.movement({
       command = 'f',
-      instruction = 'Line 5: cursor at column 0. Jump to the THIRD semicolon using f and ;.',
+      instruction = 'Line 5: jump to the SECOND semicolon using f; then ;.',
       lines = find_lines,
       from = { 5, 0 },
-      to   = { 5, 37 },   -- third ';'  ("Replace every semicolon; then verify; the output.")
-      optimal = 4,         -- f;;;
-      hint = 'Press f; once to land on the first ";", then ; twice to advance to the third.',
+      to   = { 5, 35 },   -- second ';' in "then verify; the output."
+      optimal = 3,         -- f;;
+      hint = 'Press f; to land on the first ";", then ; to advance to the second.',
     }),
   },
 }
@@ -161,7 +161,7 @@ local lesson2 = {
         'local names = {"Alice", "Bob", "Charlie", "Dave"}',
         'return { status = "ok", data = payload }',
       },
-      optimal = 11,         -- ct= then type "deadline"
+      optimal = 12,         -- ct=(3) + "deadline"(8) + Esc(1) = 12
       hint = 'ct= removes text before "=" and leaves you in Insert mode. Type "deadline" then Esc.',
     }),
     -- 4. cf to change through a character
@@ -169,7 +169,7 @@ local lesson2 = {
       command = 'cf',
       instruction = 'Line 4: cursor on "A" of "Alice". Change through the closing quote with cf" to rename to "Eve".',
       lines = compose_lines,
-      start = { 4, 15 },   -- 'A' of '"Alice"'
+      start = { 4, 16 },   -- 'A' of '"Alice"' (col 15 is the opening quote)
       expected = {
         'local result = calculate(width, height, depth)',
         'print("error: " .. tostring(err))',
@@ -177,24 +177,24 @@ local lesson2 = {
         'local names = {"Eve", "Bob", "Charlie", "Dave"}',
         'return { status = "ok", data = payload }',
       },
-      optimal = 7,          -- cf" then type Eve
-      hint = 'cf" deletes through the closing quote and puts you in Insert mode. Type Eve then ".',
+      optimal = 8,          -- cf"(3) + Eve"(4) + Esc(1) = 8
+      hint = 'cf" deletes through the closing quote and puts you in Insert mode. Type Eve" then Esc.',
     }),
-    -- 5. yf to yank through a character
+    -- 5. dt to delete up to a character
     h.vim_language({
-      command = 'yf',
-      instruction = 'Line 5: cursor on "s" of "status". Yank through the closing quote with yf", then paste after "data = " to duplicate the key.',
+      command = 'dt',
+      instruction = 'Line 5: cursor on "o" of "ok". Delete up to the comma with dt, to remove the status key.',
       lines = compose_lines,
-      start = { 5, 10 },   -- 's' of '"status"'
+      start = { 5, 11 },   -- 'o' of '"ok"'
       expected = {
         'local result = calculate(width, height, depth)',
         'print("error: " .. tostring(err))',
         'config.timeout = 30  -- seconds until retry',
         'local names = {"Alice", "Bob", "Charlie", "Dave"}',
-        'return { status = "ok", data = "status" }',
+        'return { status = ", data = payload }',
       },
-      optimal = 10,         -- yf" then navigate to position and p
-      hint = 'yf" yanks from cursor through the closing quote. Move to the target position with w or f, then p.',
+      optimal = 3,          -- dt,
+      hint = 'dt, deletes from cursor up to (but not including) the comma.',
     }),
   },
 }
@@ -241,16 +241,16 @@ local lesson3 = {
       instruction = 'Line 3: cursor is at the start. Move to the last character on the line with $.',
       lines = boundary_lines,
       from = { 3, 8 },
-      to   = { 3, 35 },   -- 'e' at end of "        cfg.debug = cfg.debug or false"
+      to   = { 3, 37 },   -- 'e' at end of "        cfg.debug = cfg.debug or false" (38 chars, last is col 37)
       optimal = 1,
       hint = '$ always moves to the last character (not past it).',
     }),
     -- 4. d$ to delete to end of line
     h.vim_language({
       command = 'd$',
-      instruction = 'Line 3: cursor is on the space before "or false". Delete to end of line with d$.',
+      instruction = 'Line 3: cursor is on the space after "=". Delete to end of line with d$.',
       lines = boundary_lines,
-      start = { 3, 27 },   -- space before 'or'
+      start = { 3, 20 },   -- space after '='
       expected = {
         '    function initialize(opts)',
         '        local cfg = opts or {}',
@@ -261,9 +261,9 @@ local lesson3 = {
         '    local result = initialize({ debug = true })',
       },
       optimal = 2,
-      hint = 'd$ deletes from the cursor through the end of the line.',
+      hint = 'd$ deletes from the cursor through the end of the line. Also available as D.',
     }),
-    -- 5. c^ to change from first non-blank to cursor
+    -- 5. d^ to delete back to first non-blank
     h.vim_language({
       command = 'd^',
       instruction = 'Line 7: cursor is on "r" of "result". Delete from cursor back to the first non-blank with d^.',
@@ -276,10 +276,10 @@ local lesson3 = {
         '        return cfg',
         '    end',
         '',
-        'result = initialize({ debug = true })',
+        '    result = initialize({ debug = true })',
       },
       optimal = 2,
-      hint = 'd^ deletes from the cursor back to (but not including) the first non-blank character.',
+      hint = 'd^ deletes from the cursor back to (but not including) the first non-blank character. Leading spaces are preserved.',
     }),
   },
 }

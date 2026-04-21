@@ -141,7 +141,7 @@ local lesson1 = {
       from = { 12, 0 },
       to   = { 1, 0 },
       optimal = 3,   -- G, gg
-      hint = 'G jumps to the bottom, gg snaps you back to the top. Two keystrokes total.',
+      hint = 'G jumps to the bottom (1 key), gg snaps you back to the top (2 keys). Three keystrokes total.',
     }),
   },
 }
@@ -260,12 +260,12 @@ local lesson3 = {
     -- 4. { backward multiple
     h.movement({
       command = '{',
-      instruction = 'Cursor is on line 15 (last paragraph). Press { three times to reach the start of the first paragraph (line 1).',
+      instruction = 'Cursor is on line 15 (last paragraph). Press { four times to reach line 1.',
       lines = para_lines,
       from = { 15, 0 },
       to   = { 1, 0 },
-      optimal = 3,
-      hint = 'Keep pressing { to walk backward through paragraph boundaries.',
+      optimal = 4,
+      hint = '{ jumps to each blank line boundary, then to the start of the buffer. Four presses: line 12 → 8 → 4 → 1.',
     }),
     -- 5. d} to delete to next paragraph
     h.vim_language({

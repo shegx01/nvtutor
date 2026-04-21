@@ -51,9 +51,9 @@ M.lessons = {
         expected = {
           'local result = compute()',
         },
-        optimal = 9,
+        optimal = 10,
         time = 8.0,
-        hint = 'ciw deletes the word and drops you into Insert mode to type the replacement',
+        hint = 'ciw deletes the word and drops you into Insert mode. Type the replacement then Esc.',
       }),
       -- Challenge 4: yiw — yank inner word and paste
       h.vim_language({
@@ -85,9 +85,9 @@ M.lessons = {
           'local timeout = 500',
           'local retries = 3',
         },
-        optimal = 6,
+        optimal = 7,
         time = 6.0,
-        hint = 'ciw works on any sequence of word characters, including numbers',
+        hint = 'ciw works on any sequence of word characters, including numbers. Don\'t forget Esc!',
       }),
     },
   },
@@ -115,17 +115,17 @@ M.lessons = {
       -- Challenge 2: ci" — change inside double quotes
       h.vim_language({
         command = 'ci"',
-        instruction = 'Change the greeting message from "Hello" to "Goodbye" using ci".',
+        instruction = 'Change the string from "old" to "new" using ci".',
         lines = {
-          'print("Hello, world!")',
+          'local msg = "old"',
         },
-        start = { 1, 8 },
+        start = { 1, 13 },
         expected = {
-          'print("Goodbye, world!")',
+          'local msg = "new"',
         },
-        optimal = 10,
+        optimal = 7,
         time = 8.0,
-        hint = 'ci" clears between the quotes and enters Insert mode',
+        hint = 'ci" clears between the quotes and enters Insert mode. Type "new" then Esc.',
       }),
       -- Challenge 3: da[ — delete a bracket (including brackets)
       h.vim_language({
@@ -145,17 +145,17 @@ M.lessons = {
       -- Challenge 4: ci{ — change inside curly braces
       h.vim_language({
         command = 'ci{',
-        instruction = 'Replace the body of the table with a single field: name = "world".',
+        instruction = 'Replace the table body with just: ok = true',
         lines = {
           'local t = { x = 1, y = 2 }',
         },
         start = { 1, 12 },
         expected = {
-          'local t = { name = "world" }',
+          'local t = { ok = true }',
         },
-        optimal = 17,
+        optimal = 13,
         time = 12.0,
-        hint = 'ci{ clears inside { } and drops you into Insert mode',
+        hint = 'ci{ clears inside { } and enters Insert mode. Type " ok = true " then Esc.',
       }),
       -- Challenge 5: di' — delete inside single quotes
       h.vim_language({

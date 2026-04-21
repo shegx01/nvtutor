@@ -44,7 +44,7 @@ M.lessons = {
           'local count = 0',
           'end',
         },
-        optimal = 16,
+        optimal = 15,
         time = 10.0,
         hint = 'O opens a new line ABOVE the cursor line — no need to move up first',
       }),
@@ -66,9 +66,9 @@ M.lessons = {
           '  return total',
           'end',
         },
-        optimal = 15,
+        optimal = 16,
         time = 10.0,
-        hint = 'o on the last body line; type the return statement; Esc',
+        hint = 'o on the last body line; type "  return total"; Esc — 16 keystrokes',
       }),
     },
   },
@@ -132,7 +132,7 @@ M.lessons = {
       }),
       -- Challenge 4: paste a line above with P
       h.editing({
-        command = 'jyykkP',
+        command = 'jyykP',
         instruction = 'Move to line 2, yank it, then paste it above line 1.',
         lines = {
           'local b = 2',
@@ -146,9 +146,9 @@ M.lessons = {
           'local a = 1',
           'local c = 3',
         },
-        optimal = 6,
+        optimal = 5,
         time = 8.0,
-        hint = 'yyP on line 2 pastes the line above itself — but navigating first is needed here',
+        hint = 'jyykP — move down, yank line, move up, paste above — 5 keystrokes',
       }),
     },
   },
@@ -169,9 +169,9 @@ M.lessons = {
         expected = {
           'the quick brown fox',
         },
-        optimal = 4,
+        optimal = 5,
         time = 6.0,
-        hint = 'rh replaces under cursor with h; move right; re replaces with e',
+        hint = 'rh replaces under cursor with h (2 keys); l to move right (1 key); re replaces with e (2 keys) — 5 total',
       }),
       -- Challenge 2: replace a digit
       h.editing({
@@ -237,9 +237,9 @@ M.lessons = {
         expected = {
           'local bar_count = 0',
         },
-        optimal = 5,
+        optimal = 6,
         time = 6.0,
-        hint = '3s deletes 3 characters and enters Insert mode — then type "bar"',
+        hint = '3s deletes 3 characters and enters Insert mode — type "bar" then Esc (6 keys)',
       }),
       -- Challenge 3: S to rewrite a whole line
       h.editing({
@@ -256,9 +256,9 @@ M.lessons = {
           '  return nil',
           'end',
         },
-        optimal = 13,
+        optimal = 12,
         time = 8.0,
-        hint = 'S clears the whole line (keeping indentation) and enters Insert mode',
+        hint = 'S clears the whole line (keeping indentation) and enters Insert mode. Type "return nil" then Esc.',
       }),
     },
   },
@@ -294,9 +294,9 @@ M.lessons = {
         expected = {
           'Hello, Vim world',
         },
-        optimal = 8,
+        optimal = 7,
         time = 8.0,
-        hint = 'a enters Insert mode AFTER the cursor character',
+        hint = 'a enters Insert mode AFTER the cursor character. Type ", Vim" then Esc.',
       }),
       -- Challenge 3: choose i vs a correctly
       h.editing({
@@ -388,7 +388,7 @@ M.lessons = {
           'local x = 10 -- REMOVE THIS',
           'local y = 20',
         },
-        start = { 1, 13 },
+        start = { 1, 12 },
         expected = {
           'local x = 10',
           'local y = 20',
@@ -438,12 +438,12 @@ M.lessons = {
       -- Challenge 4: D to strip trailing content then C on another line
       h.editing({
         command = 'D',
-        instruction = 'Delete the trailing " | unused" annotation from the end of line 1 (cursor at col 11).',
+        instruction = 'Delete the trailing " | unused" annotation from the end of line 1.',
         lines = {
           'local name | unused',
           'local age = 25',
         },
-        start = { 1, 11 },
+        start = { 1, 10 },
         expected = {
           'local name',
           'local age = 25',
