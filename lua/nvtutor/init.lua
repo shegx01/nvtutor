@@ -136,15 +136,26 @@ function M.start_lesson(chapter_n, lesson_n)
   state.current_challenge = 1
   progress.save(state)
 
-  local buf = ui.create_scratch_buffer({})
+  -- Pre-fill the buffer with the first challenge's content so the user
+  -- sees real text immediately — not a blank screen.
+  local first_challenge = lesson.challenges and lesson.challenges[1]
+  local initial_lines = first_challenge and first_challenge.buffer_lines or { '' }
+
+  -- Create the buffer with content already in it
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_set_option_value('buftype', 'nofile', { buf = buf })
+  vim.api.nvim_set_option_value('buflisted', false, { buf = buf })
+  vim.api.nvim_set_option_value('swapfile', false, { buf = buf })
+  vim.api.nvim_set_option_value('modifiable', true, { buf = buf })
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, initial_lines)
+  vim.api.nvim_set_option_value('modifiable', false, { buf = buf })
   M._state.buf = buf
 
-  -- Use noautocmd to force the buffer switch. This is the nuclear option
-  -- that bypasses ALL autocmds (dashboard, snacks, alpha, etc.) so no
-  -- plugin can intercept or replace our buffer.
-  vim.cmd('noautocmd buffer ' .. buf)
-
-  M._state.win = vim.api.nvim_get_current_win()
+  -- Force display using nvim_win_set_buf on the current window.
+  -- This is the most direct API — no autocmds, no :buffer command.
+  local win = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_buf(win, buf)
+  M._state.win = win
 
   -- Set up quit handler
   local augroup = vim.api.nvim_create_augroup('NVTutorSession', { clear = true })
