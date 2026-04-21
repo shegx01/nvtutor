@@ -149,6 +149,15 @@ function M.start_lesson(chapter_n, lesson_n)
   vim.api.nvim_set_option_value('modifiable', true, { buf = buf })
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, initial_lines)
   vim.api.nvim_set_option_value('modifiable', false, { buf = buf })
+
+  -- Disable plugins that override Vim's native behavior in the practice buffer.
+  -- Users need to learn real Vim commands, not plugin-modified versions.
+  vim.api.nvim_buf_set_var(buf, 'miniai_disable', true)       -- mini.ai text objects
+  vim.api.nvim_buf_set_var(buf, 'minisurround_disable', true) -- mini.surround
+  vim.api.nvim_buf_set_var(buf, 'minicomment_disable', true)  -- mini.comment
+  vim.api.nvim_buf_set_var(buf, 'minipairs_disable', true)    -- mini.pairs (auto brackets)
+  vim.api.nvim_buf_set_var(buf, 'miniindentscope_disable', true)
+
   M._state.buf = buf
 
   -- Force display using nvim_win_set_buf on the current window.
