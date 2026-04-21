@@ -233,12 +233,7 @@ function M.show_menu(chapters_data, progress_state, on_select)
 
   -- Highlight locked chapters with a dimmed group
   for i, chapter in ipairs(chapters_data) do
-    local unlocked = (not chapter.requires) or (
-      progress_state and
-      progress_state.chapters_completed and
-      progress_state.chapters_completed[chapter.requires]
-    )
-    if i == 1 then unlocked = true end
+    local unlocked = i <= (progress_state and progress_state.chapters_unlocked or 1)
     if not unlocked then
       -- lines offset: header=3 lines, optional continue=2, index i
       local line_offset = has_progress and 5 or 3
@@ -249,12 +244,7 @@ function M.show_menu(chapters_data, progress_state, on_select)
 
   -- Number key bindings
   for i, chapter in ipairs(chapters_data) do
-    local unlocked = (not chapter.requires) or (
-      progress_state and
-      progress_state.chapters_completed and
-      progress_state.chapters_completed[chapter.requires]
-    )
-    if i == 1 then unlocked = true end
+    local unlocked = i <= (progress_state and progress_state.chapters_unlocked or 1)
 
     if unlocked then
       local key = tostring(i)

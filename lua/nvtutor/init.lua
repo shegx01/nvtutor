@@ -66,8 +66,20 @@ function M.launch()
   end
 end
 
+function M._ensure_tutor_tab()
+  -- If we're on a dashboard or special buffer, open a new tab
+  local buftype = vim.bo.buftype
+  local filetype = vim.bo.filetype
+  local is_special = buftype ~= '' or filetype == 'alpha' or filetype == 'dashboard'
+    or filetype == 'snacks_dashboard' or filetype == 'starter' or filetype == 'lazy'
+  if is_special then
+    vim.cmd('tabnew')
+  end
+end
+
 function M.show_menu()
   require('nvtutor.highlights').setup()
+  M._ensure_tutor_tab()
   local ui = require('nvtutor.ui')
   local chapters = require('nvtutor.chapters')
   local progress = require('nvtutor.progress')
@@ -117,7 +129,8 @@ function M.start_lesson(chapter_n, lesson_n)
   state.current_challenge = 1
   progress.save(state)
 
-  -- Create scratch buffer and display it in the current window
+  -- Ensure we're not on a dashboard
+  M._ensure_tutor_tab()
   local buf = ui.create_scratch_buffer({})
   M._state.buf = buf
   vim.api.nvim_set_current_buf(buf)
