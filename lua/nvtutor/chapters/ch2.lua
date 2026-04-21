@@ -13,7 +13,7 @@ M.lessons = {
       -- Challenge 1: yank a line and put below
       h.editing({
         command = 'yyp',
-        instruction = 'Duplicate the first line by yanking it and putting a copy immediately below it.',
+        instruction = 'Duplicate line 1 below itself using yyp.',
         lines = {
           'function greet(name)',
           '  print("Hello")',
@@ -33,7 +33,7 @@ M.lessons = {
       -- Challenge 2: yank a word and put it at end of line
       h.editing({
         command = 'yiw',
-        instruction = 'Yank the word "hello" and paste it at the end of the line.',
+        instruction = 'Add "hello" at the end to get "hello worldhello". Yank with yiw then paste at line end.',
         lines = {
           'hello world',
         },
@@ -48,7 +48,7 @@ M.lessons = {
       -- Challenge 3: put before cursor with P
       h.editing({
         command = 'yyP',
-        instruction = 'Yank the current line and put a copy of it above.',
+        instruction = 'Duplicate line 2 above itself using yyP.',
         lines = {
           'local x = 10',
           'local y = 20',
@@ -68,7 +68,7 @@ M.lessons = {
       -- Challenge 4: yank 2 lines and put them
       h.editing({
         command = '2yyp',
-        instruction = 'Yank lines 1 and 2 together and paste both copies below line 2.',
+        instruction = 'Duplicate lines 1-2 below themselves using 2yyp.',
         lines = {
           '  greet("Alice")',
           '  greet("Bob")',
@@ -97,7 +97,7 @@ M.lessons = {
       -- Challenge 1: delete a character with x
       h.editing({
         command = 'x',
-        instruction = 'The word "colour" has a British spelling. Delete the "u" to make it "color".',
+        instruction = 'Change "colour" to "color" by deleting the "u" with x.',
         lines = {
           'Change the colour of the background.',
         },
@@ -112,7 +112,7 @@ M.lessons = {
       -- Challenge 2: delete a word with dw
       h.editing({
         command = 'dw',
-        instruction = 'The cursor is on "very". Delete it (and the trailing space) to clean up the sentence.',
+        instruction = 'Delete "very " to get "This is a important line." using dw.',
         lines = {
           'This is a very important line.',
         },
@@ -127,7 +127,7 @@ M.lessons = {
       -- Challenge 3: delete an entire line with dd
       h.editing({
         command = 'dd',
-        instruction = 'Delete the blank line between the two function calls.',
+        instruction = 'Remove the blank line between the two calls using dd.',
         lines = {
           'greet("Alice")',
           '',
@@ -145,7 +145,7 @@ M.lessons = {
       -- Challenge 4: delete multiple lines with count
       h.editing({
         command = '3dd',
-        instruction = 'Delete the three debug print lines (lines 2-4) in one motion.',
+        instruction = 'Delete the three debug print lines at once using 3dd.',
         lines = {
           'local result = compute()',
           'print("debug: entering")',

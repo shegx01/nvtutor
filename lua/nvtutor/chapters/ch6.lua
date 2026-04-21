@@ -96,7 +96,7 @@ local lesson1 = {
     -- 1. G to last line
     h.movement({
       command = 'G',
-      instruction = 'Cursor is on line 1. Jump to the last line of the document with G.',
+      instruction = 'Jump to the last line of the document with G',
       lines = doc_lines,
       from = { 1, 0 },
       to   = { 28, 0 },
@@ -106,7 +106,7 @@ local lesson1 = {
     -- 2. gg to first line
     h.movement({
       command = 'gg',
-      instruction = 'Cursor is on the last line. Jump to the first line with gg.',
+      instruction = 'Jump to the first line with gg',
       lines = doc_lines,
       from = { 28, 0 },
       to   = { 1, 0 },
@@ -116,7 +116,7 @@ local lesson1 = {
     -- 3. Ctrl-d scrolls down (cursor moves mid-screen)
     h.movement({
       command = '<C-d>',
-      instruction = 'Cursor is at line 1. Press Ctrl-d to scroll down half a screen (lands near line 15).',
+      instruction = 'Scroll down half a screen with Ctrl-d',
       lines = doc_lines,
       from = { 1, 0 },
       to   = { 15, 0 },
@@ -126,7 +126,7 @@ local lesson1 = {
     -- 4. Ctrl-u scrolls up
     h.movement({
       command = '<C-u>',
-      instruction = 'Cursor is near the bottom (line 28). Press Ctrl-u to scroll up half a screen.',
+      instruction = 'Scroll up half a screen with Ctrl-u',
       lines = doc_lines,
       from = { 28, 0 },
       to   = { 14, 0 },
@@ -136,7 +136,7 @@ local lesson1 = {
     -- 5. Chain: G then gg
     h.movement({
       command = 'G',
-      instruction = 'Cursor is in the middle (line 12). Jump to the bottom then back to the top (G then gg). End on line 1.',
+      instruction = 'Jump to the bottom with G then back to the top with gg',
       lines = doc_lines,
       from = { 12, 0 },
       to   = { 1, 0 },
@@ -163,7 +163,7 @@ local lesson2 = {
     -- 1. Jump to line 5
     h.movement({
       command = 'G',
-      instruction = 'Cursor is on line 1. Jump directly to line 5 with 5G.',
+      instruction = 'Jump to line 5 with 5G',
       lines = numbered_lines,
       from = { 1, 0 },
       to   = { 5, 0 },
@@ -173,7 +173,7 @@ local lesson2 = {
     -- 2. Jump to line 13
     h.movement({
       command = 'G',
-      instruction = 'Cursor is on line 1. Jump to line 13 (nu = 13) with 13G.',
+      instruction = 'Jump to line 13 with 13G',
       lines = numbered_lines,
       from = { 1, 0 },
       to   = { 13, 0 },
@@ -183,7 +183,7 @@ local lesson2 = {
     -- 3. Jump to line 20
     h.movement({
       command = 'G',
-      instruction = 'Cursor is on line 1. Jump to the last line (20) with 20G.',
+      instruction = 'Jump to the last line with 20G',
       lines = numbered_lines,
       from = { 1, 0 },
       to   = { 20, 0 },

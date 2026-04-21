@@ -13,7 +13,7 @@ M.lessons = {
       -- Challenge 1: simple j
       h.movement({
         command = 'j',
-        instruction = 'Move the cursor down to line 4 (the fox line).',
+        instruction = 'Move down to line 4 using j.',
         lines = {
           'Pack my box with five dozen liquor jugs.',
           'How vexingly quick daft zebras jump.',
@@ -31,7 +31,7 @@ M.lessons = {
       -- Challenge 2: count jump downward
       h.movement({
         command = 'j',
-        instruction = 'Jump down 5 lines in a single motion to land on the last line.',
+        instruction = 'Jump to the last line in one motion using 5j.',
         lines = {
           'Sphinx of black quartz, judge my vow.',
           'Two driven jocks help fax my big quiz.',
@@ -49,7 +49,7 @@ M.lessons = {
       -- Challenge 3: move up with k
       h.movement({
         command = 'k',
-        instruction = 'Move the cursor up from the bottom line to line 2.',
+        instruction = 'Move up to line 2 using k.',
         lines = {
           'The quick brown fox jumps over the lazy dog.',
           'Waltz, bad nymph, for quick jigs vex.',
@@ -66,7 +66,7 @@ M.lessons = {
       -- Challenge 4: combine j and k
       h.movement({
         command = 'jk',
-        instruction = 'Start on line 1, jump to line 6, then come back up to line 3.',
+        instruction = 'Land on line 3 by going down to line 6 then back up with j and k.',
         lines = h.default_prose,
         from = { 1, 0 },
         to   = { 3, 0 },
@@ -85,7 +85,7 @@ M.lessons = {
       -- Challenge 1: move right
       h.movement({
         command = 'l',
-        instruction = 'Move right to column 5 (the "q" in "quick").',
+        instruction = 'Move right to the "q" in "quick" using l.',
         lines = {
           'The quick brown fox.',
           'A second line here.',
@@ -99,7 +99,7 @@ M.lessons = {
       -- Challenge 2: move left
       h.movement({
         command = 'h',
-        instruction = 'Move left from column 10 back to column 4.',
+        instruction = 'Move left to the "m" in "my" using h.',
         lines = {
           'Pack my box with five dozen liquor jugs.',
         },
@@ -112,7 +112,7 @@ M.lessons = {
       -- Challenge 3: precise column targeting
       h.movement({
         command = 'l',
-        instruction = 'Position the cursor on the "f" in "fox" (column 16).',
+        instruction = 'Move to the "f" in "fox" using l.',
         lines = {
           'The quick brown fox jumps over the lazy dog.',
         },
@@ -125,7 +125,7 @@ M.lessons = {
       -- Challenge 4: navigate right then back left
       h.movement({
         command = 'hl',
-        instruction = 'Move right to the "b" in "box" (column 8), then back left to "m" in "my" (column 5). End on column 5.',
+        instruction = 'Land on the "m" in "my" by moving right to "box" then back left with h and l.',
         lines = {
           'Pack my box with five dozen.',
         },
@@ -146,7 +146,7 @@ M.lessons = {
       -- Challenge 1: enter insert mode and type a word
       h.editing({
         command = 'i',
-        instruction = 'The line reads "Hello world". Position is before "world". Enter insert mode and type "beautiful " (with trailing space) so it reads "Hello beautiful world".',
+        instruction = 'Turn "Hello world" into "Hello beautiful world". Press i then type: beautiful ',
         lines = {
           'Hello world',
         },
@@ -178,7 +178,7 @@ M.lessons = {
       -- Challenge 3: escape back to normal and verify position
       h.editing({
         command = 'iEsc',
-        instruction = 'Press i, type "fix", then press Esc to return to Normal mode. The line should now start with "fix".',
+        instruction = 'Turn " the bug here" into "fix the bug here". Press i then type: fix',
         lines = {
           ' the bug here',
         },
@@ -201,7 +201,7 @@ M.lessons = {
       -- Challenge 1: jump forward one word
       h.movement({
         command = 'w',
-        instruction = 'Move forward by two words to land on "brown".',
+        instruction = 'Jump to "brown" using w.',
         lines = {
           'The quick brown fox.',
         },
@@ -214,7 +214,7 @@ M.lessons = {
       -- Challenge 2: jump backward with b
       h.movement({
         command = 'b',
-        instruction = 'You are on "fox". Jump back two words to land on "quick".',
+        instruction = 'Jump back to "quick" using b.',
         lines = {
           'The quick brown fox jumps.',
         },
@@ -227,7 +227,7 @@ M.lessons = {
       -- Challenge 3: w across punctuation
       h.movement({
         command = 'w',
-        instruction = 'Jump forward two words from "Pack" to land on "box".',
+        instruction = 'Jump to "box" using w.',
         lines = {
           'Pack my box with five dozen jugs.',
         },
@@ -248,7 +248,7 @@ M.lessons = {
       -- Challenge 1: land on word end with e
       h.movement({
         command = 'e',
-        instruction = 'Jump to the end of the word "quick" (column 8).',
+        instruction = 'Jump to the end of "quick" using e.',
         lines = {
           'The quick brown fox.',
         },
@@ -261,7 +261,7 @@ M.lessons = {
       -- Challenge 2: ge backward to previous word end
       h.movement({
         command = 'ge',
-        instruction = 'You are on "brown". Use ge to jump back to the end of "quick" (column 8).',
+        instruction = 'Jump back to the end of "quick" using ge.',
         lines = {
           'The quick brown fox.',
         },
@@ -274,7 +274,7 @@ M.lessons = {
       -- Challenge 3: combine w and e for precision
       h.movement({
         command = 'we',
-        instruction = 'From "The", jump to the end of "brown" (column 14) using the fewest keystrokes.',
+        instruction = 'Jump to the end of "brown" using w and e.',
         lines = {
           'The quick brown fox.',
         },
@@ -287,7 +287,7 @@ M.lessons = {
       -- Challenge 4: full word navigation across a longer line
       h.movement({
         command = 'wbe',
-        instruction = 'Navigate from "Pack" (col 0) to land precisely on the end of "dozen" (col 27).',
+        instruction = 'Jump to the end of "dozen" using w, b, and e.',
         lines = {
           'Pack my box with five dozen jugs.',
         },

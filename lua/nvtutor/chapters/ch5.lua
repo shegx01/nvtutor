@@ -50,7 +50,7 @@ local lesson1 = {
     -- 1. f forward to a character
     h.movement({
       command = 'f',
-      instruction = 'Line 1: jump to the "r" in "returns" using fr.',
+      instruction = 'Jump to the "r" in "returns" using fr',
       lines = find_lines,
       from = { 1, 0 },
       to   = { 1, 13 },   -- 'r' of 'returns'
@@ -60,7 +60,7 @@ local lesson1 = {
     -- 2. F backward to a character
     h.movement({
       command = 'F',
-      instruction = 'Line 2: cursor is at the closing ")". Jump back to the opening "(" with F.',
+      instruction = 'Jump back to the opening "(" with F(',
       lines = find_lines,
       from = { 2, 18 },   -- closing ')' in greet("world")
       to   = { 2, 10 },   -- opening '(' in greet(
@@ -70,7 +70,7 @@ local lesson1 = {
     -- 3. t forward (till, stop before char)
     h.movement({
       command = 't',
-      instruction = 'Line 3: cursor is at column 0. Move to just before the "=" in "timeout=30" using t.',
+      instruction = 'Move to just before the "=" in "timeout=30" using t=',
       lines = find_lines,
       from = { 3, 0 },
       to   = { 3, 10 },   -- one before '=' ("timeout=30": t=4,i=5,m=6,e=7,o=8,u=9,t=10,=11)
@@ -80,7 +80,7 @@ local lesson1 = {
     -- 4. T backward (till, stop after char)
     h.movement({
       command = 'T',
-      instruction = 'Line 4: cursor is at the period. Move back to just after the ":" with T.',
+      instruction = 'Move back to just after the ":" using T:',
       lines = find_lines,
       from = { 4, 50 },   -- period at end of "done."
       to   = { 4, 43 },   -- one after ':' ("colon: done." — colon is at col 42)
@@ -90,7 +90,7 @@ local lesson1 = {
     -- 5. Chaining ; to repeat
     h.movement({
       command = 'f',
-      instruction = 'Line 5: jump to the SECOND semicolon using f; then ;.',
+      instruction = 'Jump to the second semicolon using f; then ;',
       lines = find_lines,
       from = { 5, 0 },
       to   = { 5, 35 },   -- second ';' in "then verify; the output."
@@ -119,7 +119,7 @@ local lesson2 = {
     -- 1. dt to delete up to a character
     h.vim_language({
       command = 'dt',
-      instruction = 'Line 1: cursor on "r" of "result". Delete from "result" up to (not including) the "(" with dt(.',
+      instruction = 'Delete "result = calculate" up to the "(" with dt(',
       lines = compose_lines,
       start = { 1, 6 },    -- 'r' of 'result'
       expected = {
@@ -135,7 +135,7 @@ local lesson2 = {
     -- 2. df to delete through a character
     h.vim_language({
       command = 'df',
-      instruction = 'Line 2: cursor on the opening quote. Delete through the closing quote of "error: " with df".',
+      instruction = 'Delete "error: " including its closing quote using df"',
       lines = compose_lines,
       start = { 2, 6 },    -- opening '"' of '"error: "'
       expected = {
@@ -151,7 +151,7 @@ local lesson2 = {
     -- 3. ct to change up to a character
     h.vim_language({
       command = 'ct',
-      instruction = 'Line 3: cursor is on "t" of "timeout". Change up to "=" so you can type a new key, using ct=.',
+      instruction = 'Change "timeout" to "deadline" using ct= then type the new key name',
       lines = compose_lines,
       start = { 3, 7 },    -- 't' of 'timeout'
       expected = {
@@ -167,7 +167,7 @@ local lesson2 = {
     -- 4. cf to change through a character
     h.vim_language({
       command = 'cf',
-      instruction = 'Line 4: cursor on "A" of "Alice". Change through the closing quote with cf" to rename to "Eve".',
+      instruction = 'Rename "Alice" to "Eve" using cf" then type the new name and closing quote',
       lines = compose_lines,
       start = { 4, 16 },   -- 'A' of '"Alice"' (col 15 is the opening quote)
       expected = {
@@ -183,7 +183,7 @@ local lesson2 = {
     -- 5. dt to delete up to a character
     h.vim_language({
       command = 'dt',
-      instruction = 'Line 5: cursor on "o" of "ok". Delete up to the comma with dt, to remove the status key.',
+      instruction = 'Delete the value "ok" up to the comma using dt,',
       lines = compose_lines,
       start = { 5, 11 },   -- 'o' of '"ok"'
       expected = {
@@ -218,7 +218,7 @@ local lesson3 = {
     -- 1. 0 to column zero
     h.movement({
       command = '0',
-      instruction = 'Line 1: cursor is somewhere in the middle. Jump to column 0 (start of line) with 0.',
+      instruction = 'Jump to column 0 (start of line) with 0',
       lines = boundary_lines,
       from = { 1, 20 },
       to   = { 1, 0 },
@@ -228,7 +228,7 @@ local lesson3 = {
     -- 2. ^ to first non-blank
     h.movement({
       command = '^',
-      instruction = 'Line 2: cursor is at the end. Move to the first non-whitespace character with ^.',
+      instruction = 'Move to the first non-whitespace character with ^',
       lines = boundary_lines,
       from = { 2, 26 },
       to   = { 2, 8 },    -- 'l' of 'local' after 8 spaces
@@ -238,7 +238,7 @@ local lesson3 = {
     -- 3. $ to end of line
     h.movement({
       command = '$',
-      instruction = 'Line 3: cursor is at the start. Move to the last character on the line with $.',
+      instruction = 'Move to the last character on the line with $',
       lines = boundary_lines,
       from = { 3, 8 },
       to   = { 3, 37 },   -- 'e' at end of "        cfg.debug = cfg.debug or false" (38 chars, last is col 37)
@@ -248,7 +248,7 @@ local lesson3 = {
     -- 4. d$ to delete to end of line
     h.vim_language({
       command = 'd$',
-      instruction = 'Line 3: cursor is on the space after "=". Delete to end of line with d$.',
+      instruction = 'Delete from the cursor to end of line with d$',
       lines = boundary_lines,
       start = { 3, 20 },   -- space after '='
       expected = {
@@ -266,7 +266,7 @@ local lesson3 = {
     -- 5. d^ to delete back to first non-blank
     h.vim_language({
       command = 'd^',
-      instruction = 'Line 7: cursor is on "r" of "result". Delete from cursor back to the first non-blank with d^.',
+      instruction = 'Delete "local " before "result" using d^',
       lines = boundary_lines,
       start = { 7, 10 },   -- 'r' of 'result'
       expected = {
