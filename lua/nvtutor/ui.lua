@@ -615,6 +615,58 @@ function M.show_feedback_message(message, on_dismiss)
 end
 
 -- ---------------------------------------------------------------------------
+-- 8c. show_chapter_complete
+-- ---------------------------------------------------------------------------
+
+---Show chapter completion with choices: next chapter, replay, or menu.
+---@param chapter_n integer
+---@param is_final boolean  true if this is the last chapter
+---@param on_choice fun(choice: string)  'next', 'replay', or 'menu'
+function M.show_chapter_complete(chapter_n, is_final, on_choice)
+  local lines = {
+    '',
+    string.format('  Chapter %d complete!', chapter_n),
+    '',
+  }
+
+  if is_final then
+    lines[#lines + 1] = '  [g] Start the Final Gauntlet'
+    lines[#lines + 1] = '  [r] Replay this chapter'
+  else
+    lines[#lines + 1] = string.format('  [n] Next chapter (%d)', chapter_n + 1)
+    lines[#lines + 1] = '  [r] Replay this chapter'
+    lines[#lines + 1] = '  [m] Back to menu'
+  end
+
+  lines[#lines + 1] = ''
+
+  local handle = M.show_floating(lines, { position = 'center', border = 'rounded' })
+  pcall(vim.api.nvim_buf_add_highlight, handle.buf, M._ns, 'NVTutorGold', 1, 0, -1)
+  vim.api.nvim_set_current_win(handle.win)
+
+  local chosen = false
+  local function choose(choice)
+    if chosen then return end
+    chosen = true
+    remove_float(handle)
+    if on_choice then vim.schedule(function() on_choice(choice) end) end
+  end
+
+  map(handle.buf, 'n', 'r', function() choose('replay') end, 'Replay chapter')
+
+  if is_final then
+    map(handle.buf, 'n', 'g', function() choose('next') end, 'Start gauntlet')
+    -- Auto-advance to gauntlet after 5s if no choice
+    vim.defer_fn(function() choose('next') end, 5000)
+  else
+    map(handle.buf, 'n', 'n', function() choose('next') end, 'Next chapter')
+    map(handle.buf, 'n', 'm', function() choose('menu') end, 'Back to menu')
+    -- Auto-advance to next chapter after 5s if no choice
+    vim.defer_fn(function() choose('next') end, 5000)
+  end
+end
+
+-- ---------------------------------------------------------------------------
 -- 9. show_stats
 -- ---------------------------------------------------------------------------
 

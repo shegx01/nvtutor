@@ -292,27 +292,33 @@ function M.complete_chapter(chapter_n)
   progress.mark_chapter_complete(chapter_n)
 
   if chapter_n >= require('nvtutor.chapters').get_chapter_count() then
-    -- Final chapter — auto-advance to gauntlet
-    ui.show_timed_message('All chapters complete! Starting the final gauntlet...', 2000, function()
-      local review = require('nvtutor.review')
-      review.start_gauntlet(M._state.buf, function()
-        local state = progress.load()
-        state.gauntlet_completed = true
-        progress.save(state)
-        M._state.active = false
-        M.show_stats()
-      end)
+    -- Final chapter — offer gauntlet or replay
+    ui.show_chapter_complete(chapter_n, true, function(choice)
+      if choice == 'replay' then
+        M.start_lesson(chapter_n, 1)
+      else
+        local review = require('nvtutor.review')
+        review.start_gauntlet(M._state.buf, function()
+          local state = progress.load()
+          state.gauntlet_completed = true
+          progress.save(state)
+          M._state.active = false
+          M.show_stats()
+        end)
+      end
     end)
   else
-    -- Auto-advance to next chapter
-    ui.show_timed_message(
-      string.format('Chapter %d complete! Chapter %d unlocked.', chapter_n, chapter_n + 1),
-      2500,
-      function()
+    -- Offer next chapter, replay, or menu
+    ui.show_chapter_complete(chapter_n, false, function(choice)
+      if choice == 'replay' then
+        M.start_lesson(chapter_n, 1)
+      elseif choice == 'menu' then
         M._state.active = false
         M.show_menu()
+      else -- 'next'
+        M.start_lesson(chapter_n + 1, 1)
       end
-    )
+    end)
   end
 end
 
