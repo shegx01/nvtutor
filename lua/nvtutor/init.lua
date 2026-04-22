@@ -22,9 +22,18 @@ end
 --- Buffer-local maps take precedence over global maps.
 local function restore_native_keymaps(buf)
   local natives = {
-    'H', 'L', 'M',           -- screen motions (LazyVim remaps H/L to buffer switching)
-    'J',                      -- join lines (some configs remap to move line down)
-    's', 'S',                 -- substitute (LazyVim maps s to flash.nvim/leap)
+    -- Screen motions (LazyVim remaps H/L to buffer switching)
+    'H', 'L', 'M',
+    -- Join lines (some configs remap to move line down)
+    'J',
+    -- Substitute (LazyVim maps s to flash.nvim/leap)
+    's', 'S',
+    -- Scrolling (plugins may remap for smooth scroll)
+    '<C-f>', '<C-b>', '<C-d>', '<C-u>',
+    -- Jump list
+    '<C-o>', '<C-i>',
+    -- Increment/decrement
+    '<C-a>', '<C-x>',
   }
   for _, key in ipairs(natives) do
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
