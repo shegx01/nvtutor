@@ -9,6 +9,7 @@ M.chapters = {
   { id = 6, title = 'Document Navigation',       file = 'ch6' },
   { id = 7, title = 'Search',                    file = 'ch7' },
   { id = 8, title = 'Power Commands',            file = 'ch8' },
+  { id = 9, title = 'Vim Tricks',               file = 'ch9' },
 }
 
 ---@param n number chapter number (1-8)
@@ -102,6 +103,11 @@ function M.validate()
         end
         if not c.optimal_time then
           table.insert(errors, prefix .. 'missing optimal_time')
+        end
+
+        -- Optional field type check
+        if c.optimal_solution ~= nil and type(c.optimal_solution) ~= 'string' then
+          table.insert(errors, prefix .. 'optimal_solution must be a string')
         end
 
         -- Type-specific checks

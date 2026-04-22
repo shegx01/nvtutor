@@ -284,6 +284,146 @@ local lesson3 = {
   },
 }
 
-M.lessons = { lesson1, lesson2, lesson3 }
+-- ─── Lesson 4 — Repeat Find Motions (;, ,) ───────────────────────────────────
+
+local repeat_find_lines = {
+  'local alpha = activate(args, allow_all)',
+  'call abort() after any available action',
+  'attach agents; advance and await approval',
+}
+
+local lesson4 = {
+  title = 'Repeat Find Motions',
+  description = 'Advance or reverse through find targets without retyping the search.',
+  advanced = true,
+  explanation = {
+    ';  — repeat the last f/F/t/T in the same direction.',
+    ',  — repeat the last f/F/t/T in the opposite direction.',
+    '',
+    'After fa, press ; to jump to the next "a" on the line.',
+    'Press , to step back to the previous "a".',
+    '',
+    'Works with f, F, t, and T — the repeat always knows the original direction.',
+  },
+  challenges = {
+    -- 1. ; advances to next match
+    h.movement({
+      command = ';',
+      instruction = 'Use fa then ; to reach the second "a" in "activate"',
+      lines = repeat_find_lines,
+      from = { 1, 0 },
+      to   = { 1, 16 },   -- second 'a': 'activate' at col 13, 'a' inside at col 14; 'a' of 'args' col 24 -- target 'a' of 'activate' char 2 (col 14)
+      optimal = 3,          -- f a ;
+      hint = 'fa finds the first "a". ; repeats the find to advance to the next "a".',
+      optimal_solution = 'fa;',
+    }),
+    -- 2. , reverses back
+    h.movement({
+      command = ',',
+      instruction = 'Use fa then ; to jump forward, then , to step back',
+      lines = repeat_find_lines,
+      from = { 1, 0 },
+      to   = { 1, 13 },   -- first 'a' in 'activate' (col 13)
+      optimal = 4,          -- f a ; ,
+      hint = 'fa then ; moves you past the target. , reverses the find back one step.',
+      optimal_solution = 'fa;,',
+    }),
+    -- 3. Chain ; across a line
+    h.movement({
+      command = ';',
+      instruction = 'Use fa then ;; to reach the third "a" on the line',
+      lines = repeat_find_lines,
+      from = { 2, 0 },
+      to   = { 2, 22 },   -- third 'a': 'call abort() after any...' — 'a' of 'any' at col 22
+      optimal = 4,          -- f a ; ;
+      hint = 'Each ; repeats the same find one step forward along the line.',
+      optimal_solution = 'fa;;',
+    }),
+  },
+}
+
+-- ─── Lesson 5 — The cgn + Dot Loop ───────────────────────────────────────────
+
+local cgn_lines = {
+  'var count = 0',
+  'var name  = "world"',
+  'var total = var_count + var_offset',
+  'console.log(var, count)',
+}
+
+local lesson5 = {
+  title = 'The cgn + Dot Loop',
+  description = 'Search, change the match, then dot-repeat to replace every occurrence.',
+  advanced = true,
+  explanation = {
+    'cgn  — change the next search match (enter Insert mode over it).',
+    '',
+    'Workflow:',
+    '  1. /pattern<CR>  — set the search register.',
+    '  2. cgn           — delete the match and enter Insert mode.',
+    '  3. Type replacement text, then Esc.',
+    '  4. .             — repeat: find next match and apply the same change.',
+    '',
+    'Each . applies the "delete match + insert text" operation to the next hit.',
+    'Skip a match by pressing n instead of . to advance without changing.',
+  },
+  challenges = {
+    -- 1. cgn to change the first match
+    h.vim_language({
+      command = 'cgn',
+      instruction = 'Search /var then cgn to change the first "var" to "let"',
+      lines = cgn_lines,
+      start = { 1, 0 },
+      expected = {
+        'let count = 0',
+        'var name  = "world"',
+        'var total = var_count + var_offset',
+        'console.log(var, count)',
+      },
+      optimal = 12,   -- /var<CR>(5) cgn(3) let(3) Esc(1)
+      hint = '/var<CR> sets the search. cgn deletes the first match. Type "let" then Esc.',
+      optimal_solution = '/var\rcgnlet\27',
+    }),
+    -- 2. . to dot-repeat cgn replacement
+    h.vim_language({
+      command = '.',
+      instruction = 'After changing first "var" to "let" with cgn, press . to change the next',
+      lines = {
+        'let count = 0',
+        'var name  = "world"',
+        'var total = var_count + var_offset',
+        'console.log(var, count)',
+      },
+      start = { 1, 0 },
+      expected = {
+        'let count = 0',
+        'let name  = "world"',
+        'var total = var_count + var_offset',
+        'console.log(var, count)',
+      },
+      optimal = 1,
+      hint = '. repeats the cgn change on the next occurrence of the search pattern.',
+    }),
+    -- 3. Open-ended: use /var cgn + dot to replace all standalone "var" occurrences
+    h.vim_language({
+      command = '.',
+      instruction = 'Change all standalone "var" to "let" using /var, cgn, Esc, then . twice',
+      lines = cgn_lines,
+      start = { 1, 0 },
+      expected = {
+        'let count = 0',
+        'let name  = "world"',
+        'var total = var_count + var_offset',
+        'console.log(let, count)',
+      },
+      optimal = 14,   -- /var<CR> cgn let <Esc> . .
+      check_lines = { 1, 2, 4 },
+      hint = '/var<CR> searches for "var" (not whole-word). cgn then dot chains replacements. n skips compound tokens.',
+      optimal_solution = '/var\rcgnlet\27..',
+    }),
+  },
+}
+
+M.lessons = { lesson1, lesson2, lesson3, lesson4, lesson5 }
 
 return M

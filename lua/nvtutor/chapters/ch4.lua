@@ -454,6 +454,126 @@ M.lessons = {
       }),
     },
   },
+
+
+  -- Lesson 8: Resume & One-Shot (gi, Ctrl-o) [advanced]
+  {
+    title = 'Resume & One-Shot',
+    description = 'gi returns to the exact position where you last left Insert mode and re-enters it — no navigation needed. Ctrl-o (from inside Insert mode) executes a single Normal-mode command then drops you back into Insert.',
+    advanced = true,
+    challenges = {
+      -- Challenge 1: return to last insert point with gi
+      h.editing({
+        command = 'gi',
+        instruction = 'Resume typing at the last insert point with gi',
+        lines = {
+          'local greeting = "Hello, "',
+          'local other = "unrelated"',
+        },
+        start = { 2, 0 },
+        expected = {
+          'local greeting = "Hello, world"',
+          'local other = "unrelated"',
+        },
+        optimal = 8,
+        time = 10.0,
+        hint = 'gi jumps back to where Insert was last exited and enters Insert — type "world" then Esc',
+      }),
+      -- Challenge 2: execute one normal command from insert mode with Ctrl-o
+      h.editing({
+        command = '<C-o>',
+        instruction = 'From insert mode use Ctrl-o dd to delete a line then keep typing',
+        lines = {
+          'local x = 10',
+          '-- scratch',
+          'local y = ',
+        },
+        start = { 3, 10 },
+        expected = {
+          'local x = 10',
+          'local y = 20',
+        },
+        optimal = 10,
+        time = 12.0,
+        hint = 'Enter insert on line 3 at the end; Ctrl-o then kdd removes the scratch line; type 20 Esc',
+      }),
+      -- Challenge 3: Ctrl-o to center screen without leaving insert
+      h.editing({
+        command = '<C-o>',
+        instruction = 'Use Ctrl-o zz while typing to keep cursor centered, then finish',
+        lines = {
+          'function process()',
+          '  local result = ',
+        },
+        start = { 2, 16 },
+        expected = {
+          'function process()',
+          '  local result = compute()',
+        },
+        optimal = 12,
+        time = 12.0,
+        hint = 'Enter insert after the space; Ctrl-o zz centers the view; continue typing "compute()"',
+      }),
+    },
+  },
+
+  -- Lesson 9: Insert-Mode Registers (Ctrl-r", Ctrl-r=) [advanced]
+  {
+    title = 'Insert-Mode Registers',
+    description = 'Ctrl-r followed by a register name pastes that register\'s content without leaving Insert mode. Ctrl-r= opens the expression register: type any Vim expression (e.g. 2+2) and its result is inserted.',
+    advanced = true,
+    challenges = {
+      -- Challenge 1: paste unnamed register inside insert mode with Ctrl-r"
+      h.editing({
+        command = '<C-r>"',
+        instruction = 'Yank "Alice" then paste it in insert mode with Ctrl-r"',
+        lines = {
+          'Alice',
+          'Hello, !',
+        },
+        start = { 1, 0 },
+        expected = {
+          'Alice',
+          'Hello, Alice!',
+        },
+        optimal = 9,
+        time = 10.0,
+        hint = 'yiw on "Alice"; move to line 2 before "!"; enter insert; Ctrl-r " pastes it',
+      }),
+      -- Challenge 2: use expression register for arithmetic
+      h.editing({
+        command = '<C-r>=',
+        instruction = 'Insert the result of 6*7 using Ctrl-r=',
+        lines = {
+          'The answer is: ',
+        },
+        start = { 1, 15 },
+        expected = {
+          'The answer is: 42',
+        },
+        optimal = 10,
+        time = 10.0,
+        hint = 'Enter insert at end of line; Ctrl-r = opens the expression prompt; type 6*7 then Enter',
+      }),
+      -- Challenge 3: paste a named register in insert mode
+      h.editing({
+        command = '<C-r>a',
+        instruction = 'Yank a word into register a then paste with Ctrl-r a in insert',
+        lines = {
+          'compute',
+          'local fn = ',
+        },
+        start = { 1, 0 },
+        expected = {
+          'compute',
+          'local fn = compute',
+        },
+        optimal = 10,
+        time = 10.0,
+        hint = '"ayiw on "compute"; move to end of line 2; enter insert; Ctrl-r a pastes it',
+      }),
+    },
+  },
 }
 
 return M

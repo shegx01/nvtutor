@@ -327,7 +327,15 @@ function M.show_lesson_menu(chapter_n, lessons_data, progress_state, on_select)
   push('  ' .. string.rep('─', 40))
   push('')
 
+  local progress_mod = require('nvtutor.progress')
+  local basics_done = progress_mod.all_basic_complete(chapter_n)
+  local locked_lines = {} -- track which display lines are locked (0-indexed)
+  local line_idx = 3      -- 0-indexed: title(0) + separator(1) + blank(2)
+
   for i, lesson in ipairs(lessons_data) do
+    local is_advanced = lesson.advanced == true
+    local locked = is_advanced and not basics_done
+
     local done_icon = ''
     if progress_state and progress_state.lessons_completed then
       local key = chapter_n .. ':' .. i
@@ -351,7 +359,13 @@ function M.show_lesson_menu(chapter_n, lessons_data, progress_state, on_select)
       end
     end
 
-    push(string.format('  [%d] %s%s%s', i, lesson.title or ('Lesson ' .. i), done_icon, mastery))
+    local prefix = is_advanced and '★ ' or ''
+    local suffix = locked and ' [locked]' or ''
+    push(string.format('  [%d] %s%s%s%s%s', i, prefix, lesson.title or ('Lesson ' .. i), done_icon, mastery, suffix))
+    if locked then
+      locked_lines[line_idx] = true
+    end
+    line_idx = line_idx + 1
   end
 
   push('')
@@ -361,11 +375,20 @@ function M.show_lesson_menu(chapter_n, lessons_data, progress_state, on_select)
   buf_set_option(buf, 'modifiable', false)
   vim.cmd('noautocmd buffer ' .. buf)
 
-  for i = 1, #lessons_data do
-    local key = tostring(i)
-    map(buf, 'n', key, function()
-      on_select(i)
-    end, 'Select lesson ' .. i)
+  -- Dim locked advanced lessons
+  for ln, _ in pairs(locked_lines) do
+    pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, 'NVTutorHint', ln, 0, -1)
+  end
+
+  for i, lesson in ipairs(lessons_data) do
+    local is_advanced = lesson.advanced == true
+    local locked = is_advanced and not basics_done
+    if not locked then
+      local key = tostring(i)
+      map(buf, 'n', key, function()
+        on_select(i)
+      end, 'Select lesson ' .. i)
+    end
   end
 
   map(buf, 'n', 'q', function()
@@ -489,13 +512,14 @@ end
 -- ---------------------------------------------------------------------------
 
 ---Flash success/error with tier badge and keystroke comparison.
----Auto-dismisses after 1.5 s.
+---Auto-dismisses after 1.5s (2.5s when optimal_solution is shown).
 ---@param success boolean
 ---@param tier string   'bronze'|'silver'|'gold'|nil
 ---@param keystrokes integer  Keystrokes used
 ---@param optimal integer     Optimal keystrokes
 ---@param time number         Time in seconds
-function M.show_feedback(success, tier, keystrokes, optimal, time)
+---@param optimal_solution? string  Optional text describing the best approach
+function M.show_feedback(success, tier, keystrokes, optimal, time, optimal_solution)
   local icon   = success and '  NICE! ' or '  Oops… '
   local result = success and 'Correct!' or 'Try again'
 
@@ -516,6 +540,12 @@ function M.show_feedback(success, tier, keystrokes, optimal, time)
     ks_line,
   }
 
+  -- Append optimal solution when provided
+  if optimal_solution then
+    lines[#lines + 1] = ''
+    lines[#lines + 1] = '  Optimal: ' .. optimal_solution
+  end
+
   local handle = M.show_floating(lines, { position = 'bottom', border = 'rounded' })
 
   -- Apply highlight group to first line
@@ -531,9 +561,16 @@ function M.show_feedback(success, tier, keystrokes, optimal, time)
     pcall(vim.api.nvim_buf_add_highlight, handle.buf, M._ns, 'NVTutorBronze', 1, 0, -1)
   end
 
+  -- Highlight the optimal solution line in gold if present
+  if optimal_solution then
+    pcall(vim.api.nvim_buf_add_highlight, handle.buf, M._ns, 'NVTutorGold', #lines - 1, 0, -1)
+  end
+
+  -- Content-aware dismiss: extra time when optimal_solution is shown
+  local delay = 1500 + (optimal_solution and 1000 or 0)
   vim.defer_fn(function()
     remove_float(handle)
-  end, 1500)
+  end, delay)
 end
 
 -- ---------------------------------------------------------------------------

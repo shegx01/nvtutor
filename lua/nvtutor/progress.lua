@@ -201,4 +201,26 @@ function M.mark_chapter_complete(chapter)
   M.save(state)
 end
 
+--- Returns true when every non-advanced lesson in chapter_n is completed.
+---@param chapter_n number
+---@return boolean
+function M.all_basic_complete(chapter_n)
+  local state = M.load()
+  local ok, chapter = pcall(require, 'nvtutor.chapters.ch' .. chapter_n)
+  if not ok then
+    vim.notify('NVTutor: failed to load chapter ' .. chapter_n .. ': ' .. tostring(chapter), vim.log.levels.WARN)
+    return false
+  end
+  if not chapter.lessons then return false end
+  for i, lesson in ipairs(chapter.lessons) do
+    if not lesson.advanced then
+      local key = chapter_n .. ':' .. i
+      if not state.lessons_completed[key] then
+        return false
+      end
+    end
+  end
+  return true
+end
+
 return M

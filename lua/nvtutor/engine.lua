@@ -395,16 +395,17 @@ function M._finish_challenge(buf, skipped)
     ui().set_success_highlight(buf, target_ln, 0, #line_text)
   end
 
-  -- Show feedback
-  ui().show_feedback(true, tier, keystrokes, challenge_def.optimal_keystrokes, elapsed)
+  -- Show feedback (with optional optimal solution text)
+  ui().show_feedback(true, tier, keystrokes, challenge_def.optimal_keystrokes, elapsed, challenge_def.optimal_solution)
 
-  -- Callback
+  -- Callback (include whether optimal_solution was shown for timer adjustment)
   if M._state.completion_cb then
     M._state.completion_cb({
       skipped = false,
       keystrokes = keystrokes,
       time = elapsed,
       tier = tier,
+      has_optimal = challenge_def.optimal_solution ~= nil,
     })
   end
 end

@@ -224,10 +224,11 @@ function M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx)
         chapter_n, lesson_n, challenge_idx,
         challenge_def.command, result.keystrokes, result.time, result.tier
       )
-      -- Brief pause then next challenge
+      -- Brief pause then next challenge (longer when optimal solution is shown)
+      local delay = result.has_optimal and 2500 or 1500
       vim.defer_fn(function()
         M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
-      end, 1500)
+      end, delay)
     end
   end)
 end
@@ -263,7 +264,7 @@ function M.complete_chapter(chapter_n)
 
   progress.mark_chapter_complete(chapter_n)
 
-  if chapter_n >= 8 then
+  if chapter_n >= require('nvtutor.chapters').get_chapter_count() then
     -- Final chapter — start gauntlet
     ui.show_feedback_message('All chapters complete! Starting the final gauntlet...', function()
       local review = require('nvtutor.review')

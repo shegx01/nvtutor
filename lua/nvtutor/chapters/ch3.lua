@@ -174,6 +174,147 @@ M.lessons = {
       }),
     },
   },
+
+
+  -- Lesson 3: gn Text Object (dgn, cgn) [advanced]
+  {
+    title = 'gn Text Object',
+    description = 'gn is a text object that matches the next search pattern. dgn deletes it; cgn changes it. Both are dot-repeatable, making multi-match editing trivially fast: search once, then hammer . to repeat.',
+    advanced = true,
+    challenges = {
+      -- Challenge 1: delete next search match with dgn
+      h.vim_language({
+        command = 'dgn',
+        instruction = 'Search /todo then delete the match with dgn',
+        lines = {
+          'local todo = "buy milk"',
+          'local task = "todo: call dentist"',
+          'local note = "nothing here"',
+        },
+        start = { 1, 0 },
+        expected = {
+          'local  = "buy milk"',
+          'local task = "todo: call dentist"',
+          'local note = "nothing here"',
+        },
+        optimal = 7,
+        time = 10.0,
+        hint = '/todo<CR> positions on first match; dgn deletes that match (3 more keys)',
+      }),
+      -- Challenge 2: change next match with cgn then dot-repeat
+      h.vim_language({
+        command = 'cgn',
+        instruction = 'Search /foo then change each match to bar with cgn and .',
+        lines = {
+          'local foo = 1',
+          'local foo_count = foo + 1',
+        },
+        start = { 1, 0 },
+        expected = {
+          'local bar = 1',
+          'local bar_count = bar + 1',
+        },
+        optimal = 14,
+        time = 15.0,
+        hint = '/foo<CR>, cgn, type bar, Esc — then . twice to repeat for the remaining matches',
+      }),
+      -- Challenge 3: dgn is dot-repeatable across matches
+      h.vim_language({
+        command = 'dgn.',
+        instruction = 'Delete every occurrence of "old" using dgn then dot-repeat',
+        lines = {
+          'old system, old config, old data',
+        },
+        start = { 1, 0 },
+        expected = {
+          ' system,  config,  data',
+        },
+        optimal = 9,
+        time = 12.0,
+        hint = '/old<CR>, dgn deletes first match — press . twice more for the rest',
+      }),
+      -- Challenge 4: cgn to rename a variable across a function
+      h.vim_language({
+        command = 'cgn',
+        instruction = 'Rename "val" to "num" throughout the buffer using cgn and .',
+        lines = {
+          'local val = 0',
+          'val = val + 1',
+          'return val',
+        },
+        start = { 1, 0 },
+        expected = {
+          'local num = 0',
+          'num = num + 1',
+          'return num',
+        },
+        optimal = 18,
+        time = 20.0,
+        hint = '/val<CR>, cgn, num, Esc — press . for each remaining match',
+      }),
+    },
+  },
+
+  -- Lesson 4: Extended Text Objects (dis, dap, dit, dat) [advanced]
+  {
+    title = 'Extended Text Objects',
+    description = 'Vim text objects extend beyond words and brackets. "is" = inner sentence; "ap" = a paragraph (with surrounding blank line); "it" = inner tag content; "at" = a tag (including the tags themselves).',
+    advanced = true,
+    challenges = {
+      -- Challenge 1: delete inner sentence with dis
+      h.vim_language({
+        command = 'dis',
+        instruction = 'Delete the middle sentence with dis',
+        lines = {
+          'First sentence here.  Remove this one completely.  Last sentence here.',
+        },
+        start = { 1, 22 },
+        expected = {
+          'First sentence here.  Last sentence here.',
+        },
+        optimal = 3,
+        time = 6.0,
+        hint = 'dis deletes from the start to the end of the current sentence (no surrounding space)',
+      }),
+      -- Challenge 2: delete a paragraph with dap
+      h.vim_language({
+        command = 'dap',
+        instruction = 'Delete the whole middle paragraph with dap',
+        lines = {
+          'Keep this paragraph.',
+          '',
+          'Delete this paragraph.',
+          'It has two lines.',
+          '',
+          'Keep this paragraph too.',
+        },
+        start = { 3, 0 },
+        expected = {
+          'Keep this paragraph.',
+          '',
+          'Keep this paragraph too.',
+        },
+        optimal = 3,
+        time = 6.0,
+        hint = 'dap deletes the paragraph the cursor is in plus the surrounding blank line',
+      }),
+      -- Challenge 3: delete inner tag content with dit
+      h.vim_language({
+        command = 'dit',
+        instruction = 'Clear the tag content with dit leaving <p></p>',
+        lines = {
+          '<p>Hello, world!</p>',
+        },
+        start = { 1, 4 },
+        expected = {
+          '<p></p>',
+        },
+        optimal = 3,
+        time = 6.0,
+        hint = 'dit deletes everything between the opening and closing tag — cursor anywhere inside',
+      }),
+    },
+  },
 }
 
 return M

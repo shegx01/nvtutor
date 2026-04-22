@@ -62,6 +62,7 @@ function M.movement(opts)
     optimal_keystrokes = opts.optimal,
     optimal_time = opts.time or 5.0,
     hint = opts.hint,
+    optimal_solution = opts.optimal_solution,
   }
 end
 
@@ -115,6 +116,7 @@ function M.visual(opts)
     optimal_keystrokes = opts.optimal,
     optimal_time = opts.time or 5.0,
     hint = opts.hint,
+    optimal_solution = opts.optimal_solution,
   }
 end
 
@@ -150,6 +152,7 @@ function M.search(opts)
     optimal_keystrokes = opts.optimal,
     optimal_time = opts.time or 5.0,
     hint = opts.hint,
+    optimal_solution = opts.optimal_solution,
   }
 end
 

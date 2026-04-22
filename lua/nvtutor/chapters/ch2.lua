@@ -440,6 +440,191 @@ M.lessons = {
       }),
     },
   },
+
+
+  -- Lesson 7: The Yank Register ("0p, "_d) [advanced]
+  {
+    title = 'The Yank Register',
+    description = '"0 holds the most recent yank (not overwritten by deletes). Use "0p to paste your last yank even after subsequent deletions. "_ is the black-hole register — deleting into it discards the text entirely.',
+    advanced = true,
+    challenges = {
+      -- Challenge 1: paste last yank after a delete with "0p
+      h.editing({
+        command = '"0p',
+        instruction = 'Paste the yanked word after an unrelated delete with "0p',
+        lines = {
+          'greet("Alice")',
+          'remove_this_line',
+          'local fn = ',
+        },
+        start = { 1, 6 },
+        expected = {
+          'greet("Alice")',
+          'local fn = Alice',
+        },
+        optimal = 8,
+        time = 12.0,
+        hint = 'yiw on "Alice", then dd the unwanted line, then "0p at line end — "0 still has "Alice"',
+      }),
+      -- Challenge 2: black-hole delete with "_d to avoid clobbering register
+      h.editing({
+        command = '"_d',
+        instruction = 'Delete the debug line without clobbering the register',
+        lines = {
+          'useful = compute()',
+          'print("DEBUG: remove me")',
+          'result = useful',
+        },
+        start = { 1, 9 },
+        expected = {
+          'useful = compute()',
+          'result = compute()',
+        },
+        optimal = 10,
+        time = 12.0,
+        hint = 'yiw on "compute()" first; then "_dd the debug line; then p on line 2 end',
+      }),
+      -- Challenge 3: yank → delete something → paste original yank
+      h.editing({
+        command = '"0p',
+        instruction = 'Move "hello" to line 3 using yank, black-hole delete, then "0p',
+        lines = {
+          'local name = "hello"',
+          '-- scratch line',
+          'local greeting = ',
+        },
+        start = { 1, 13 },
+        expected = {
+          'local name = "hello"',
+          'local greeting = "hello"',
+        },
+        optimal = 12,
+        time = 15.0,
+        hint = 'yi" on "hello"; "_dd the scratch line; navigate to line 2 end; "0p pastes the yank',
+      }),
+    },
+  },
+
+  -- Lesson 8: Named Registers ("a, "A, "ap) [advanced]
+  {
+    title = 'Named Registers',
+    description = '"ayy yanks the current line into register a. "Ayy appends the current line to register a. "ap pastes from register a. Named registers (a-z) let you hold multiple independent clips.',
+    advanced = true,
+    challenges = {
+      -- Challenge 1: yank a line into a named register
+      h.editing({
+        command = '"ayy"ap',
+        instruction = 'Duplicate line 2 below itself via register a',
+        lines = {
+          'local x = 10',
+          'local y = 20',
+          'local z = 30',
+        },
+        start = { 2, 0 },
+        expected = {
+          'local x = 10',
+          'local y = 20',
+          'local y = 20',
+          'local z = 30',
+        },
+        optimal = 6,
+        time = 8.0,
+        hint = '"ayy yanks the line into register a; "ap pastes it below',
+      }),
+      -- Challenge 2: append a second line into register a then paste both
+      h.editing({
+        command = '"Ayy"ap',
+        instruction = 'Collect lines 1 and 2 into register a then paste both after line 3',
+        lines = {
+          'alpha',
+          'beta',
+          'gamma',
+        },
+        start = { 1, 0 },
+        expected = {
+          'alpha',
+          'beta',
+          'gamma',
+          'alpha',
+          'beta',
+        },
+        optimal = 10,
+        time = 12.0,
+        hint = '"ayy on line 1 (register a = "alpha"); j; "Ayy appends "beta"; G; "ap pastes both',
+      }),
+      -- Challenge 3: use two named registers independently
+      h.editing({
+        command = '"a"b',
+        instruction = 'Swap line 1 and line 3 using registers a and b',
+        lines = {
+          'first',
+          'middle',
+          'last',
+        },
+        start = { 1, 0 },
+        expected = {
+          'last',
+          'middle',
+          'first',
+        },
+        optimal = 12,
+        time = 15.0,
+        hint = '"ayy on line 1; G; "byy; "aGp; gg"bp — or use Vd + named registers to swap',
+      }),
+    },
+  },
+
+  -- Lesson 9: Visual Reselect & Flip (gv, o) [advanced]
+  {
+    title = 'Visual Reselect & Flip',
+    description = 'gv reselects the last visual selection. Inside visual mode, o flips the cursor to the other end of the selection so you can extend or shrink from either side.',
+    advanced = true,
+    challenges = {
+      -- Challenge 1: reselect last visual selection with gv
+      h.visual({
+        command = 'gv',
+        instruction = 'Reselect the previous visual region with gv',
+        lines = {
+          'The quick brown fox jumps over the lazy dog.',
+        },
+        start = { 1, 4 },
+        target_region = { { 1, 4 }, { 1, 8 } },
+        optimal = 2,
+        time = 6.0,
+        hint = 'gv immediately restores the last visual selection — no cursor movement needed',
+        optimal_solution = 'gv — reselect last visual',
+      }),
+      -- Challenge 2: flip to other end of selection with o
+      h.visual({
+        command = 'vo',
+        instruction = 'Start a visual selection, then flip to the other end with o',
+        lines = {
+          'Pack my box with five dozen liquor jugs.',
+        },
+        start = { 1, 8 },
+        target_region = { { 1, 0 }, { 1, 8 } },
+        optimal = 4,
+        time = 8.0,
+        hint = 'v to start selection, then o flips the "active" end to the other side',
+        optimal_solution = 'o — flip cursor to other end of selection',
+      }),
+      -- Challenge 3: use gv then operate on it
+      h.editing({
+        command = 'gvd',
+        instruction = 'Re-select the last visual region and delete it with gvd',
+        lines = {
+          'Remove THIS TEXT from the line.',
+        },
+        start = { 1, 7 },
+        expected = {
+          'Remove  from the line.',
+        },
+        optimal = 3,
+        time = 8.0,
+        hint = 'Assume THIS TEXT was selected previously; gv restores it; d deletes it',
+      }),
+    },
+  },
 }
 
 return M

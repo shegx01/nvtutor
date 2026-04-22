@@ -674,6 +674,338 @@ local lesson6 = {
   },
 }
 
-M.lessons = { lesson1, lesson2, lesson3, lesson4, lesson5, lesson6 }
+-- ─── Lesson 7 — :norm on Ranges ──────────────────────────────────────────────
+
+local norm_lines = {
+  'function alpha()',
+  'function beta()',
+  'function gamma()',
+  'function delta()',
+  'function epsilon()',
+}
+
+local norm_comment_lines = {
+  'const alpha = 1',
+  'const beta  = 2',
+  'const gamma = 3',
+  'const delta = 4',
+}
+
+local lesson7 = {
+  title = ':norm on Ranges',
+  description = 'Apply a Normal-mode sequence to every line in a range with :norm.',
+  advanced = true,
+  explanation = {
+    ":'<,'>norm A;  — append a semicolon to every line in the visual selection.",
+    ':%norm I//     — prepend "//" to every line in the file (comment all).',
+    ':%norm A;      — append ";" to every line.',
+    '',
+    ':norm {keys} executes the given Normal-mode keystrokes on each line.',
+    'Combine with ranges: %, line numbers, or visual selection marks (<,>).',
+    '',
+    'Useful for batch structural edits that macros would also handle.',
+    'No need to record a macro when the edit is a simple prefix/suffix.',
+  },
+  challenges = {
+    -- 1. :%norm A to append to all lines
+    h.power({
+      command = ':%norm',
+      instruction = 'Append "()" to every line using :%norm A()',
+      lines = norm_lines,
+      start = { 1, 0 },
+      expected = {
+        'function alpha()()',
+        'function beta()()',
+        'function gamma()()',
+        'function delta()()',
+        'function epsilon()()',
+      },
+      optimal = 11,   -- :%norm A()<CR>
+      hint = ':%norm A() runs A (append) then "()" on every line in the buffer.',
+      optimal_solution = ':%norm A()\r',
+    }),
+    -- 2. :%norm I to prepend to all lines
+    h.power({
+      command = ':%norm',
+      instruction = 'Comment every line by prepending "-- " using :%norm I-- ',
+      lines = norm_lines,
+      start = { 1, 0 },
+      expected = {
+        '-- function alpha()',
+        '-- function beta()',
+        '-- function gamma()',
+        '-- function delta()',
+        '-- function epsilon()',
+      },
+      optimal = 13,   -- :%norm I-- <CR> (space included)
+      hint = 'I enters Insert at the start of the line. Everything after I is the inserted text.',
+      optimal_solution = ':%norm I-- \r',
+    }),
+    -- 3. Range norm on specific lines
+    h.power({
+      command = ':2,3norm',
+      instruction = 'Append ";" to lines 2-3 only using :2,3norm A;',
+      lines = norm_comment_lines,
+      start = { 1, 0 },
+      expected = {
+        'const alpha = 1',
+        'const beta  = 2;',
+        'const gamma = 3;',
+        'const delta = 4',
+      },
+      optimal = 13,
+      hint = ':2,3norm limits :norm to lines 2 and 3. Lines 1 and 4 are unchanged.',
+      optimal_solution = ':2,3norm A;\r',
+    }),
+  },
+}
+
+-- ─── Lesson 8 — Command-Line Window (q:, q/) ──────────────────────────────────
+
+local cmdwin_lines = {
+  'alpha = 1',
+  'beta  = 2',
+  'gamma = 3',
+  'delta = 4',
+}
+
+local lesson8 = {
+  title = 'Command-Line Window',
+  description = 'Edit and re-run past commands and searches from an editable buffer.',
+  advanced = true,
+  explanation = {
+    'q:  — open the command-line window showing ex command history.',
+    'q/  — open the search history as an editable buffer.',
+    'q?  — open backward-search history.',
+    '',
+    'Inside the window you can:',
+    '  - Edit any past command with full Normal-mode motions.',
+    '  - Press <CR> on a line to execute it.',
+    '  - Press <C-c> or :q to close without executing.',
+    '',
+    'This is powerful for tweaking a long substitute command you ran before.',
+  },
+  challenges = {
+    -- 1. Use q: window to run a substitute
+    h.power({
+      command = 'q:',
+      instruction = 'Open q:, type :%s/alpha/ALPHA/g and press Enter to execute',
+      lines = cmdwin_lines,
+      start = { 1, 0 },
+      expected = {
+        'ALPHA = 1',
+        'beta  = 2',
+        'gamma = 3',
+        'delta = 4',
+      },
+      optimal = 22,
+      hint = 'q: opens the command window. Type the substitute command and press Enter to run it.',
+      optimal_solution = 'q::%s/alpha/ALPHA/g\r',
+    }),
+    -- 2. Run a global delete via q:
+    h.power({
+      command = 'q:',
+      instruction = 'Via q:, run :g/beta/d to delete the "beta" line',
+      lines = cmdwin_lines,
+      start = { 1, 0 },
+      expected = {
+        'alpha = 1',
+        'gamma = 3',
+        'delta = 4',
+      },
+      optimal = 14,
+      hint = 'In the command window, type :g/beta/d and press Enter.',
+      optimal_solution = 'q::g/beta/d\r',
+    }),
+    -- 3. q: to uppercase a specific line
+    h.power({
+      command = 'q:',
+      instruction = 'Open q: and run :3s/.*/\\U&/ to uppercase line 3',
+      lines = cmdwin_lines,
+      start = { 1, 0 },
+      expected = {
+        'alpha = 1',
+        'beta  = 2',
+        'GAMMA = 3',
+        'delta = 4',
+      },
+      optimal = 16,
+      hint = 'In the command window, type :3s/.*/\\U&/ and press Enter. \\U& uppercases the whole match.',
+      optimal_solution = 'q::3s/.*/\\U&/\r',
+    }),
+  },
+}
+
+-- ─── Lesson 9 — Repeat & Chain (@:, @@) ──────────────────────────────────────
+
+local repeat_lines = {
+  'const alpha = "old"',
+  'const beta  = "old"',
+  'const gamma = "old"',
+  'const delta = "old"',
+}
+
+local lesson9 = {
+  title = 'Repeat & Chain',
+  description = 'Replay the last ex command with @: and chain repeats with @@.',
+  advanced = true,
+  explanation = {
+    '@:   — repeat the last ex command (: command) exactly as typed.',
+    '@@   — repeat the last @{reg} or @: invocation.',
+    '',
+    'Workflow:',
+    '  1. Run an ex command: :s/old/new/',
+    '  2. Move to the next target line.',
+    '  3. @: repeats the :s command on the new line.',
+    '  4. @@ repeats @: again without re-typing.',
+    '',
+    '@: is the ex-command equivalent of . for Normal changes.',
+    'Great for running the same :norm, :s, or :g on multiple disconnected lines.',
+  },
+  challenges = {
+    -- 1. @: to repeat last :s command
+    h.power({
+      command = '@:',
+      instruction = 'Run :s/old/new/ on line 1, then @: on line 2 to repeat it',
+      lines = repeat_lines,
+      start = { 1, 0 },
+      expected = {
+        'const alpha = "new"',
+        'const beta  = "new"',
+        'const gamma = "old"',
+        'const delta = "old"',
+      },
+      optimal = 16,   -- :s/old/new/<CR> j @:
+      hint = ':s/old/new/ changes line 1. j moves down. @: replays the substitute on line 2.',
+      optimal_solution = ':s/old/new/\rj@:',
+    }),
+    -- 2. @@ to repeat @:
+    h.power({
+      command = '@@',
+      instruction = 'After @: replaces line 2, press j then @@ to continue to line 3',
+      lines = {
+        'const alpha = "new"',
+        'const beta  = "new"',
+        'const gamma = "old"',
+        'const delta = "old"',
+      },
+      start = { 3, 0 },
+      expected = {
+        'const alpha = "new"',
+        'const beta  = "new"',
+        'const gamma = "new"',
+        'const delta = "old"',
+      },
+      optimal = 2,   -- @@ (after @: was already used)
+      hint = '@@ re-runs the most recent @:. Two keystrokes continue the chain.',
+      optimal_solution = '@@',
+    }),
+    -- 3. Chain @: and @@ to process all remaining lines
+    h.power({
+      command = '@@',
+      instruction = 'Process line 4 with @@ to replace the last "old"',
+      lines = {
+        'const alpha = "new"',
+        'const beta  = "new"',
+        'const gamma = "new"',
+        'const delta = "old"',
+      },
+      start = { 4, 0 },
+      expected = {
+        'const alpha = "new"',
+        'const beta  = "new"',
+        'const gamma = "new"',
+        'const delta = "new"',
+      },
+      optimal = 2,
+      hint = '@@ keeps replaying the last ex command. Every subsequent line needs only two keystrokes.',
+      optimal_solution = '@@',
+    }),
+  },
+}
+
+-- ─── Lesson 10 — Project-Wide Replace ────────────────────────────────────────
+
+local project_lines = {
+  'require("utils.logger")',
+  'require("utils.parser")',
+  'require("utils.formatter")',
+  'local utils = require("utils")',
+  '-- see utils docs for details',
+}
+
+local lesson10 = {
+  title = 'Project-Wide Replace',
+  description = 'Learn :vimgrep, :cdo, and :args patterns via single-buffer substitution.',
+  advanced = true,
+  explanation = {
+    'Real project-wide replace workflow:',
+    '  :args **/*.lua          — load all Lua files into the args list.',
+    '  :vimgrep /pattern/ %   — populate the quickfix list with matches.',
+    '  :cdo s/old/new/g       — run substitute on every quickfix entry.',
+    '  :cfdo update           — save all changed files.',
+    '',
+    'In this buffer we practise the same patterns with :%s and :g:',
+    '  :%s  — equivalent of :cdo s applied to one buffer.',
+    '  :g   — equivalent of filtering + acting on matching lines.',
+    '',
+    'The key insight: :cdo s/old/new/g is :%s/old/new/g across every file.',
+  },
+  challenges = {
+    -- 1. :%s to simulate cdo substitute
+    h.power({
+      command = ':%s',
+      instruction = 'Replace "utils" with "lib" everywhere using :%s/utils/lib/g',
+      lines = project_lines,
+      start = { 1, 0 },
+      expected = {
+        'require("lib.logger")',
+        'require("lib.parser")',
+        'require("lib.formatter")',
+        'local lib = require("lib")',
+        '-- see lib docs for details',
+      },
+      optimal = 17,
+      hint = ':%s/utils/lib/g is what :cdo s/utils/lib/g does to each file. /g replaces all per line.',
+      optimal_solution = ':%s/utils/lib/g\r',
+    }),
+    -- 2. :g to simulate vimgrep + norm action
+    h.power({
+      command = ':g',
+      instruction = 'Prepend "-- " to every require() line using :g/require/norm I-- ',
+      lines = project_lines,
+      start = { 1, 0 },
+      expected = {
+        '-- require("utils.logger")',
+        '-- require("utils.parser")',
+        '-- require("utils.formatter")',
+        '-- local utils = require("utils")',
+        '-- see utils docs for details',
+      },
+      optimal = 20,
+      hint = ':g/require/norm I-- runs I (insert at start) + "-- " on every matching line.',
+      optimal_solution = ':g/require/norm I-- \r',
+    }),
+    -- 3. Combine :g and :s for targeted replacement
+    h.power({
+      command = ':g',
+      instruction = 'On require() lines only, replace "utils" with "core" using :g/require/s/utils/core/g',
+      lines = project_lines,
+      start = { 1, 0 },
+      expected = {
+        'require("core.logger")',
+        'require("core.parser")',
+        'require("core.formatter")',
+        'local utils = require("core")',
+        '-- see utils docs for details',
+      },
+      optimal = 28,
+      hint = ':g/require/s/utils/core/g — :g filters to require lines, :s replaces only there.',
+      optimal_solution = ':g/require/s/utils/core/g\r',
+    }),
+  },
+}
+
+M.lessons = { lesson1, lesson2, lesson3, lesson4, lesson5, lesson6, lesson7, lesson8, lesson9, lesson10 }
 
 return M

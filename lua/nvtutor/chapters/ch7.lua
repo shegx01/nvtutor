@@ -193,6 +193,351 @@ local lesson2 = {
   },
 }
 
-M.lessons = { lesson1, lesson2 }
+-- ─── Lesson 3 — Regex Patterns ───────────────────────────────────────────────
+
+local regex_lines = {
+  'user123 logged in at 09:45:30',
+  'error404: resource not found',
+  'item_price = 19.99',
+  'valid tokens: foo bar baz42',
+  'ratio = 3/4 and offset = -7',
+  'tags: <div> <span> <p>',
+}
+
+local lesson3 = {
+  title = 'Regex Patterns',
+  description = 'Match digits, word chars, and repeated sequences with Vim regex atoms.',
+  advanced = true,
+  explanation = {
+    '\\d    — match a digit character (0–9).',
+    '\\w    — match a word character (letter, digit, or underscore).',
+    '.     — match any single character.',
+    '\\+    — one or more of the preceding atom.',
+    '*     — zero or more of the preceding atom.',
+    '',
+    'In Vim these atoms use backslash notation (not PCRE).',
+    'Example: /\\d\\+ finds the first run of digits.',
+    '',
+    'Use n/N to walk through all matches after the initial search.',
+  },
+  challenges = {
+    -- 1. \d+ to find first run of digits
+    h.search({
+      command = '/',
+      instruction = 'Find the first digit sequence using /\\d\\+',
+      lines = regex_lines,
+      from = { 1, 0 },
+      to   = { 1, 4 },   -- '123' starting at col 4
+      optimal = 5,         -- /\d\+<CR>
+      hint = '\\d matches one digit, \\+ means one or more. The cursor lands on the first digit.',
+      optimal_solution = '/\\d\\+\r',
+    }),
+    -- 2. \w+ to find first word token
+    h.search({
+      command = '/',
+      instruction = 'Jump to "foo" on line 4 by searching /foo',
+      lines = regex_lines,
+      from = { 1, 0 },
+      to   = { 4, 15 },  -- 'foo' starts at col 15 on line 4
+      optimal = 5,
+      hint = '/foo is a literal search. \\w\\+ would match any word — try both to compare.',
+      optimal_solution = '/foo\r',
+    }),
+    -- 3. . wildcard match
+    h.search({
+      command = '/',
+      instruction = 'Search for a 3-char pattern "3/4" using /3.4',
+      lines = regex_lines,
+      from = { 1, 0 },
+      to   = { 5, 9 },   -- '3/4' on line 5
+      optimal = 5,
+      hint = '. in Vim regex matches any character. /3.4 matches "3" + any char + "4".',
+      optimal_solution = '/3.4\r',
+    }),
+    -- 4. Digit run with n to advance
+    h.search({
+      command = 'n',
+      instruction = 'Find all digit sequences with /\\d\\+ then press n to reach line 3',
+      lines = regex_lines,
+      from = { 1, 0 },
+      to   = { 3, 14 },  -- digits in 'item_price = 19.99' -> '19' at col 14
+      optimal = 6,         -- /\d\+<CR> n
+      hint = '/\\d\\+<CR> lands on "123" on line 1. Press n to advance to the next match.',
+      optimal_solution = '/\\d\\+\rn',
+    }),
+  },
+}
+
+-- ─── Lesson 4 — Very Magic Mode (\v) ─────────────────────────────────────────
+
+local vmagic_lines = {
+  'status: ok or warn or error',
+  'mode: read or write or append',
+  'color: red or blue or green',
+}
+
+local lesson4 = {
+  title = 'Very Magic Mode',
+  description = 'Use \\v to write cleaner regex without escaping every metacharacter.',
+  advanced = true,
+  explanation = {
+    '\\v  — very magic prefix: all special chars act as regex without backslashes.',
+    '',
+    'Without \\v:  /\\(foo\\|bar\\)  — verbose, hard to read.',
+    'With \\v:     /\\v(foo|bar)   — cleaner, PCRE-like syntax.',
+    '',
+    'With \\v:',
+    '  +   means one or more  (no backslash needed)',
+    '  |   means alternation',
+    '  ()  means grouping',
+    '',
+    'Use \\V for "very nomagic" (everything literal except \\n and \\\\).',
+  },
+  challenges = {
+    -- 1. Alternation with \v
+    h.search({
+      command = '/',
+      instruction = 'Find "ok" or "warn" using /\\v(ok|warn)',
+      lines = vmagic_lines,
+      from = { 1, 0 },
+      to   = { 1, 8 },   -- 'ok' on line 1 col 8
+      optimal = 12,        -- /\v(ok|warn)<CR>
+      hint = '\\v makes | and () work without backslashes. The cursor lands on the first match.',
+      optimal_solution = '/\\v(ok|warn)\r',
+    }),
+    -- 2. n to advance through alternation matches
+    h.search({
+      command = 'n',
+      instruction = 'After /\\v(ok|warn), press n to reach "warn" on line 1',
+      lines = vmagic_lines,
+      from = { 1, 0 },
+      to   = { 1, 12 },  -- 'warn' on line 1 col 12
+      optimal = 13,
+      hint = 'n advances to the next alternation match — "warn" follows "ok".',
+      optimal_solution = '/\\v(ok|warn)\rn',
+    }),
+    -- 3. Three-way alternation
+    h.search({
+      command = '/',
+      instruction = 'Find "read", "write", or "append" on line 2 with /\\v(read|write|append)',
+      lines = vmagic_lines,
+      from = { 3, 0 },
+      to   = { 2, 6 },   -- 'read' on line 2 col 6
+      optimal = 21,
+      hint = '\\v(read|write|append) — no extra backslashes needed with very magic mode.',
+      optimal_solution = '/\\v(read|write|append)\r',
+    }),
+  },
+}
+
+-- ─── Lesson 5 — Substitute Command (:s) ──────────────────────────────────────
+
+local sub_lines = {
+  'The colour of the sky is colour blue.',
+  'The colour of the sea is colour teal.',
+  'Colour is everywhere in nature.',
+}
+
+local lesson5 = {
+  title = 'Substitute Command',
+  description = 'Replace text across lines and ranges with :s — the Swiss Army knife.',
+  advanced = true,
+  explanation = {
+    ':%s/old/new/g        — replace every occurrence in the whole file.',
+    ':%s/old/new/gc       — same, but confirm each substitution.',
+    ':1,3s/old/new/g      — replace only on lines 1–3.',
+    ":'<,'>s/old/new/g    — replace within the visual selection.",
+    '',
+    'Flags:',
+    '  g — replace ALL occurrences on each line (not just the first).',
+    '  c — confirm before each replacement.',
+    '  i — case-insensitive match.',
+    '',
+    'The pattern supports full Vim regex: :%s/\\d\\+/NUM/g replaces all numbers.',
+  },
+  challenges = {
+    -- 1. Global substitute across whole file
+    h.power({
+      command = ':%s',
+      instruction = 'Replace all "colour" with "color" using :%s/colour/color/g',
+      lines = sub_lines,
+      start = { 1, 0 },
+      expected = {
+        'The color of the sky is color blue.',
+        'The color of the sea is color teal.',
+        'Color is everywhere in nature.',
+      },
+      optimal = 20,   -- :%s/colour/color/g<CR>
+      hint = ':%s applies to every line. The /g flag replaces all matches per line.',
+      optimal_solution = ':%s/colour/color/g\r',
+    }),
+    -- 2. Range substitute on specific lines
+    h.power({
+      command = ':1,2s',
+      instruction = 'Replace "color" with "hue" on lines 1-2 only with :1,2s/color/hue/g',
+      lines = {
+        'The color of the sky is color blue.',
+        'The color of the sea is color teal.',
+        'Color is everywhere in nature.',
+      },
+      start = { 1, 0 },
+      expected = {
+        'The hue of the sky is hue blue.',
+        'The hue of the sea is hue teal.',
+        'Color is everywhere in nature.',
+      },
+      optimal = 20,
+      hint = ':1,2s limits the substitution to lines 1 and 2. Line 3 is untouched.',
+      optimal_solution = ':1,2s/color/hue/g\r',
+    }),
+    -- 3. Substitute with regex pattern
+    h.power({
+      command = ':%s',
+      instruction = 'Replace the colour word on line 3 using :%s/Color/Hue/g',
+      lines = {
+        'The hue of the sky is hue blue.',
+        'The hue of the sea is hue teal.',
+        'Color is everywhere in nature.',
+      },
+      start = { 3, 0 },
+      expected = {
+        'The hue of the sky is hue blue.',
+        'The hue of the sea is hue teal.',
+        'Hue is everywhere in nature.',
+      },
+      optimal = 16,
+      hint = ':%s/Color/Hue/g — exact case match replaces only "Color" (capital C).',
+      optimal_solution = ':%s/Color/Hue/g\r',
+    }),
+    -- 4. Case-insensitive substitute with /i flag
+    h.power({
+      command = ':%s',
+      instruction = 'Replace every "hue" (any case) with "tone" using :%s/hue/tone/gi',
+      lines = {
+        'The hue of the sky is hue blue.',
+        'The hue of the sea is hue teal.',
+        'Hue is everywhere in nature.',
+      },
+      start = { 1, 0 },
+      expected = {
+        'The tone of the sky is tone blue.',
+        'The tone of the sea is tone teal.',
+        'tone is everywhere in nature.',
+      },
+      optimal = 17,
+      hint = 'The i flag makes the match case-insensitive, so "Hue" and "hue" are both replaced.',
+      optimal_solution = ':%s/hue/tone/gi\r',
+    }),
+  },
+}
+
+-- ─── Lesson 6 — Global Command (:g) ──────────────────────────────────────────
+
+local global_lines = {
+  'DEBUG: initialising engine',
+  'INFO:  engine started',
+  'DEBUG: loading config file',
+  'INFO:  config loaded',
+  'DEBUG: connecting to database',
+  'ERROR: connection refused',
+  'INFO:  retrying connection',
+  'DEBUG: retry attempt 1',
+}
+
+local lesson6 = {
+  title = 'Global Command',
+  description = 'Run ex commands on every line that matches (or does not match) a pattern.',
+  advanced = true,
+  explanation = {
+    ':g/pattern/cmd   — run cmd on every line matching pattern.',
+    ':v/pattern/cmd   — run cmd on every line NOT matching pattern.',
+    '',
+    'Common uses:',
+    '  :g/DEBUG/d          — delete all DEBUG lines.',
+    '  :v/ERROR/d          — keep only ERROR lines (delete the rest).',
+    '  :g/TODO/norm A DONE — append " DONE" to every TODO line.',
+    '',
+    ':v is shorthand for :g! (inverse match).',
+    'The cmd after the last / can be any ex command: d, s, norm, p, etc.',
+  },
+  challenges = {
+    -- 1. :g to delete matching lines
+    h.power({
+      command = ':g',
+      instruction = 'Delete all DEBUG lines with :g/DEBUG/d',
+      lines = global_lines,
+      start = { 1, 0 },
+      expected = {
+        'INFO:  engine started',
+        'INFO:  config loaded',
+        'ERROR: connection refused',
+        'INFO:  retrying connection',
+      },
+      optimal = 12,   -- :g/DEBUG/d<CR>
+      hint = ':g/DEBUG/d runs d (delete) on every line containing "DEBUG".',
+      optimal_solution = ':g/DEBUG/d\r',
+    }),
+    -- 2. :v to keep only matching lines
+    h.power({
+      command = ':v',
+      instruction = 'Keep only INFO lines by deleting non-INFO lines with :v/INFO/d',
+      lines = {
+        'INFO:  engine started',
+        'INFO:  config loaded',
+        'ERROR: connection refused',
+        'INFO:  retrying connection',
+      },
+      start = { 1, 0 },
+      expected = {
+        'INFO:  engine started',
+        'INFO:  config loaded',
+        'INFO:  retrying connection',
+      },
+      optimal = 11,
+      hint = ':v/INFO/d deletes every line that does NOT contain "INFO".',
+      optimal_solution = ':v/INFO/d\r',
+    }),
+    -- 3. :g with norm to append text
+    h.power({
+      command = ':g',
+      instruction = 'Append " [logged]" to every INFO line using :g/INFO/norm A [logged]',
+      lines = {
+        'INFO:  engine started',
+        'INFO:  config loaded',
+        'INFO:  retrying connection',
+      },
+      start = { 1, 0 },
+      expected = {
+        'INFO:  engine started [logged]',
+        'INFO:  config loaded [logged]',
+        'INFO:  retrying connection [logged]',
+      },
+      optimal = 22,
+      hint = ':g/INFO/norm runs a Normal-mode command on each match. A enters Insert at end of line.',
+      optimal_solution = ':g/INFO/norm A [logged]\r',
+    }),
+    -- 4. :g with substitution
+    h.power({
+      command = ':g',
+      instruction = 'Uppercase INFO to INFO: on matched lines using :g/INFO/s/INFO/INFO:/g',
+      lines = {
+        'INFO engine started',
+        'INFO config loaded',
+        'ERROR connection refused',
+      },
+      start = { 1, 0 },
+      expected = {
+        'INFO: engine started',
+        'INFO: config loaded',
+        'ERROR connection refused',
+      },
+      optimal = 22,
+      hint = ':g/INFO/s runs a substitute only on INFO lines. Non-matching lines are untouched.',
+      optimal_solution = ':g/INFO/s/INFO/INFO:/g\r',
+    }),
+  },
+}
+
+M.lessons = { lesson1, lesson2, lesson3, lesson4, lesson5, lesson6 }
 
 return M
