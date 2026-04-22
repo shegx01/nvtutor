@@ -107,6 +107,13 @@ function M.setup_buffer(buf, challenge_def, win)
   local target_win = (win and vim.api.nvim_win_is_valid(win)) and win or 0
   ui().configure_practice_window(target_win)
 
+  -- Screen-relative commands (H/M/L) are affected by scrolloff.
+  -- Temporarily set scrolloff=0 so they land on the exact target lines.
+  local screen_cmds = { H = true, M = true, L = true, zt = true, zz = true, zb = true }
+  if screen_cmds[challenge_def.command] then
+    vim.api.nvim_set_option_value('scrolloff', 0, { win = target_win })
+  end
+
   -- Position cursor
   local line = challenge_def.start_pos[1]
   local col = challenge_def.start_pos[2]
