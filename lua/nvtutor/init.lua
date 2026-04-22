@@ -89,7 +89,10 @@ function M.launch()
     restore_native_keymaps(buf)
     M._state.buf = buf
     M._state.active = true
-    vim.cmd('noautocmd buffer ' .. buf)
+    local old_ei = vim.o.eventignore
+    vim.o.eventignore = 'all'
+    vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
+    vim.o.eventignore = old_ei
     M._state.win = vim.api.nvim_get_current_win()
     if state.review_state.type == 'gauntlet' then
       review.start_gauntlet(buf, function()
@@ -188,9 +191,12 @@ function M.start_lesson(chapter_n, lesson_n)
 
   M._state.buf = buf
 
-  -- Force display — use noautocmd to prevent dashboard plugins from intercepting
+  -- Force display — suppress all events to prevent dashboard plugins from intercepting
   local win = vim.api.nvim_get_current_win()
-  vim.cmd('noautocmd buffer ' .. buf)
+  local old_ei = vim.o.eventignore
+  vim.o.eventignore = 'all'
+  vim.api.nvim_win_set_buf(win, buf)
+  vim.o.eventignore = old_ei
   M._state.win = win
 
   -- Clean window appearance for the tutor
