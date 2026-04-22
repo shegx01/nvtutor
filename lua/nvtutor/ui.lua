@@ -618,6 +618,50 @@ end
 -- 9. show_stats
 -- ---------------------------------------------------------------------------
 
+-- ---------------------------------------------------------------------------
+-- 8b. show_timed_message
+-- ---------------------------------------------------------------------------
+
+---Show a message that auto-dismisses after a delay (also dismissable by keypress).
+---@param message string
+---@param delay_ms number  milliseconds before auto-dismiss
+---@param on_done fun()    callback after dismiss
+function M.show_timed_message(message, delay_ms, on_done)
+  local lines = {
+    '',
+    '  ' .. message,
+    '',
+  }
+
+  local handle = M.show_floating(lines, { position = 'center', border = 'rounded' })
+  pcall(vim.api.nvim_buf_add_highlight, handle.buf, M._ns, 'NVTutorSuccess', 1, 0, -1)
+
+  local dismissed = false
+  local function dismiss()
+    if dismissed then return end
+    dismissed = true
+    remove_float(handle)
+    if on_done then vim.schedule(on_done) end
+  end
+
+  -- Auto-dismiss after delay
+  vim.defer_fn(dismiss, delay_ms)
+
+  -- Also allow early dismiss by keypress
+  local keys = {
+    '<CR>', '<Space>', '<Esc>',
+    'j','k','h','l','q',
+  }
+  for _, k in ipairs(keys) do
+    map(handle.buf, 'n', k, dismiss, 'Dismiss')
+    map(handle.buf, 'i', k, dismiss, 'Dismiss')
+  end
+end
+
+-- ---------------------------------------------------------------------------
+-- 9. show_stats
+-- ---------------------------------------------------------------------------
+
 ---Full stats screen rendered in the current window.
 ---@param progress_state table
 function M.show_stats(progress_state)

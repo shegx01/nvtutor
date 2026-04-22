@@ -270,15 +270,16 @@ function M.complete_lesson(chapter_n, lesson_n)
   local lesson_count = #chapter.lessons
 
   if lesson_n >= lesson_count then
-    -- Last lesson in chapter — trigger review round
-    ui.show_feedback_message('Chapter ' .. chapter_n .. ' lessons complete! Starting review round...', function()
+    -- Last lesson in chapter — auto-advance to review round
+    ui.show_timed_message('Chapter ' .. chapter_n .. ' complete! Starting review...', 2000, function()
       local review = require('nvtutor.review')
       review.start_review(chapter_n, M._state.buf, function()
         M.complete_chapter(chapter_n)
       end)
     end)
   else
-    ui.show_feedback_message('Lesson complete! Press any key for the next lesson.', function()
+    -- Auto-advance to next lesson
+    ui.show_timed_message('Lesson complete! Next lesson starting...', 2000, function()
       M.start_lesson(chapter_n, lesson_n + 1)
     end)
   end
@@ -291,8 +292,8 @@ function M.complete_chapter(chapter_n)
   progress.mark_chapter_complete(chapter_n)
 
   if chapter_n >= require('nvtutor.chapters').get_chapter_count() then
-    -- Final chapter — start gauntlet
-    ui.show_feedback_message('All chapters complete! Starting the final gauntlet...', function()
+    -- Final chapter — auto-advance to gauntlet
+    ui.show_timed_message('All chapters complete! Starting the final gauntlet...', 2000, function()
       local review = require('nvtutor.review')
       review.start_gauntlet(M._state.buf, function()
         local state = progress.load()
@@ -303,8 +304,10 @@ function M.complete_chapter(chapter_n)
       end)
     end)
   else
-    ui.show_feedback_message(
-      'Chapter ' .. chapter_n .. ' complete! Chapter ' .. (chapter_n + 1) .. ' unlocked. Press any key.',
+    -- Auto-advance to next chapter
+    ui.show_timed_message(
+      string.format('Chapter %d complete! Chapter %d unlocked.', chapter_n, chapter_n + 1),
+      2500,
       function()
         M._state.active = false
         M.show_menu()
