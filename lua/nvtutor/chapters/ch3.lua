@@ -13,7 +13,7 @@ M.lessons = {
       -- Challenge 1: diw — delete inner word
       h.vim_language({
         command = 'diw',
-        instruction = 'The cursor is inside the word "ugly". Delete it (leaving the spaces) using the inner-word text object.',
+        instruction = 'Delete the word "ugly" (leaving the spaces) using diw.',
         lines = {
           'Remove the ugly comment now.',
         },
@@ -28,7 +28,7 @@ M.lessons = {
       -- Challenge 2: daw — delete a word (with space)
       h.vim_language({
         command = 'daw',
-        instruction = 'Delete the word "very" and its surrounding space so no double-space remains.',
+        instruction = 'Delete "very" and its space to get "This is important." using daw.',
         lines = {
           'This is very important.',
         },
@@ -43,7 +43,7 @@ M.lessons = {
       -- Challenge 3: ciw — change inner word
       h.vim_language({
         command = 'ciw',
-        instruction = 'The cursor is on "foo". Change it to "result" using ciw.',
+        instruction = 'Change "foo" to "result" using ciw.',
         lines = {
           'local foo = compute()',
         },
@@ -58,7 +58,7 @@ M.lessons = {
       -- Challenge 4: yiw — yank inner word and paste
       h.vim_language({
         command = 'yiw',
-        instruction = 'Yank the word "greet" and paste it at the end of the second line after the space.',
+        instruction = 'Add "greet" at the end of line 2. Yank it with yiw then paste at end of line 2.',
         lines = {
           'function greet(name)',
           'local fn = ',
@@ -75,7 +75,7 @@ M.lessons = {
       -- Challenge 5: ciw on a number
       h.vim_language({
         command = 'ciw',
-        instruction = 'The timeout is set to 100. Change it to 500 using ciw.',
+        instruction = 'Change the timeout from 100 to 500 using ciw.',
         lines = {
           'local timeout = 100',
           'local retries = 3',
@@ -100,7 +100,7 @@ M.lessons = {
       -- Challenge 1: di( — delete inside parentheses
       h.vim_language({
         command = 'di(',
-        instruction = 'Clear all arguments inside greet() without removing the parentheses.',
+        instruction = 'Clear the arguments to get greet() using di(.',
         lines = {
           'greet("Alice", "Bob")',
         },
@@ -115,7 +115,7 @@ M.lessons = {
       -- Challenge 2: ci" — change inside double quotes
       h.vim_language({
         command = 'ci"',
-        instruction = 'Change the string from "old" to "new" using ci".',
+        instruction = 'Change "old" to "new" inside the quotes using ci".',
         lines = {
           'local msg = "old"',
         },
@@ -130,7 +130,7 @@ M.lessons = {
       -- Challenge 3: da[ — delete a bracket (including brackets)
       h.vim_language({
         command = 'da[',
-        instruction = 'Delete the entire [1, 2, 3] array literal including the brackets.',
+        instruction = 'Delete "[1, 2, 3]" including brackets using da[.',
         lines = {
           'local nums = [1, 2, 3]',
         },
@@ -145,7 +145,7 @@ M.lessons = {
       -- Challenge 4: ci{ — change inside curly braces
       h.vim_language({
         command = 'ci{',
-        instruction = 'Replace the table body with just: ok = true',
+        instruction = 'Change the table body to "ok = true" using ci{.',
         lines = {
           'local t = { x = 1, y = 2 }',
         },
@@ -160,7 +160,7 @@ M.lessons = {
       -- Challenge 5: di' — delete inside single quotes
       h.vim_language({
         command = "di'",
-        instruction = "Clear the string content inside single quotes, leaving just the empty '' pair.",
+        instruction = "Clear 'insert' to get an empty '' using di'.",
         lines = {
           "local mode = 'insert'",
         },

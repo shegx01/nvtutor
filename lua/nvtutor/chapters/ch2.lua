@@ -173,7 +173,7 @@ M.lessons = {
       -- Challenge 1: select a single word visually and yank
       h.visual({
         command = 'v',
-        instruction = 'Enter Visual mode from the "q" in "quick" and extend the selection to cover the whole word "quick" (to column 8).',
+        instruction = 'Select "quick" using v then e.',
         lines = {
           'The quick brown fox.',
         },
@@ -186,7 +186,7 @@ M.lessons = {
       -- Challenge 2: select across words
       h.visual({
         command = 'v',
-        instruction = 'Select "brown fox" (columns 10-18) using Visual mode.',
+        instruction = 'Select "brown fox" using v then 2e.',
         lines = {
           'The quick brown fox jumps.',
         },
@@ -199,7 +199,7 @@ M.lessons = {
       -- Challenge 3: select and delete
       h.editing({
         command = 'vd',
-        instruction = 'Use Visual mode to select "TODO: " (columns 0-5) at the start of the line, then delete it.',
+        instruction = 'Delete "TODO: " to get "fix the off-by-one error". Select with v5l then d.',
         lines = {
           'TODO: fix the off-by-one error',
           'return count - 1',
@@ -224,7 +224,7 @@ M.lessons = {
       -- Challenge 1: select one line and yank
       h.visual({
         command = 'V',
-        instruction = 'Select the entire second line using Visual Line mode.',
+        instruction = 'Select the entire second line using V.',
         lines = {
           'def hello():',
           '    print("Hello, world!")',
@@ -239,7 +239,7 @@ M.lessons = {
       -- Challenge 2: select multiple lines
       h.visual({
         command = 'V',
-        instruction = 'Select lines 2 through 4 using Visual Line mode and a downward motion.',
+        instruction = 'Select lines 2-4 with V then 2j.',
         lines = {
           'local names = {',
           '  "Alice",',
@@ -256,7 +256,7 @@ M.lessons = {
       -- Challenge 3: select and delete entire lines
       h.editing({
         command = 'Vd',
-        instruction = 'Delete both comment lines (lines 1 and 2) using Visual Line mode.',
+        instruction = 'Delete both comment lines to leave just "return process(data)". Use Vjd.',
         lines = {
           '-- TODO: remove before shipping',
           '-- HACK: temporary workaround',
@@ -273,7 +273,7 @@ M.lessons = {
       -- Challenge 4: select lines and move them with p
       h.editing({
         command = 'Vdp',
-        instruction = 'Cut the first line with Visual Line mode and paste it after line 2.',
+        instruction = 'Move "local z = 30" after "local x = 10" using Vdp.',
         lines = {
           '  local z = 30',
           '  local x = 10',
@@ -300,7 +300,7 @@ M.lessons = {
       -- Challenge 1: select a column of visible characters
       h.visual({
         command = '<C-v>',
-        instruction = 'Select the ">" markers at the start of all 3 lines using block select (Ctrl-v then 2j).',
+        instruction = 'Select the ">" column across all 3 lines using Ctrl-v then 2j.',
         lines = {
           '> Buy groceries',
           '> Walk the dog',
@@ -315,7 +315,7 @@ M.lessons = {
       -- Challenge 2: select a rectangular block of text
       h.visual({
         command = '<C-v>',
-        instruction = 'Select the 3-letter status codes ("200", "404", "500") in the first column across all 3 lines.',
+        instruction = 'Select the 3-digit status codes across all 3 lines using Ctrl-v 2l 2j.',
         lines = {
           '200 OK',
           '404 Not Found',
@@ -330,7 +330,7 @@ M.lessons = {
       -- Challenge 3: block delete a column of characters
       h.editing({
         command = '<C-v>d',
-        instruction = 'Delete the leading "- " marker from each of the three list items using block delete.',
+        instruction = 'Remove the "- " prefix from all 3 lines using Ctrl-v block select then d.',
         lines = {
           '- apple',
           '- banana',
@@ -357,7 +357,7 @@ M.lessons = {
       -- Challenge 1: indent a single line
       h.editing({
         command = '>>',
-        instruction = 'Indent the function body line one level to the right.',
+        instruction = 'Indent "print("running")" one level right using >>.',
         lines = {
           'function run()',
           'print("running")',
@@ -376,7 +376,7 @@ M.lessons = {
       -- Challenge 2: dedent a line
       h.editing({
         command = '<<',
-        instruction = 'The return line is over-indented. Dedent it one level.',
+        instruction = 'Fix the over-indented "return sum" by dedenting one level with <<.',
         lines = {
           'function total()',
           '  local sum = 0',
@@ -397,7 +397,7 @@ M.lessons = {
       -- Challenge 3: indent a block with Visual mode
       h.editing({
         command = 'V2j>',
-        instruction = 'Indent the three body lines of the loop one level using Visual Line mode.',
+        instruction = 'Indent the 3 loop body lines one level using V2j>.',
         lines = {
           'for i = 1, 10 do',
           'print(i)',
@@ -420,7 +420,7 @@ M.lessons = {
       -- Challenge 4: auto-indent with ==
       h.editing({
         command = '==',
-        instruction = 'The else-branch line has wrong indentation. Auto-indent it with ==.',
+        instruction = 'Fix the indentation of "print("non-positive")" using ==.',
         lines = {
           'if x > 0 then',
           '  print("positive")',

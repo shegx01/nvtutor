@@ -75,7 +75,7 @@ local lesson1 = {
     -- 1. / forward search to land on a word
     h.search({
       command = '/',
-      instruction = 'Cursor is on line 1. Search forward for "listeners" and land on its first occurrence.',
+      instruction = 'Search for "listeners" using /listeners to reach its first occurrence',
       lines = pattern_lines,
       from = { 1, 0 },
       to   = { 8, 7 },    -- 'self.listeners = {}' — col 7 is 'l'
@@ -85,7 +85,7 @@ local lesson1 = {
     -- 2. n to advance to next match
     h.search({
       command = 'n',
-      instruction = 'Search for "self" then press n to reach the second occurrence (line 8).',
+      instruction = 'Search for "self" then press n to reach line 8',
       lines = pattern_lines,
       from = { 1, 0 },
       to   = { 8, 2 },    -- 'self' in 'self.listeners = {}' on line 8
@@ -95,7 +95,7 @@ local lesson1 = {
     -- 3. ? backward search
     h.search({
       command = '?',
-      instruction = 'Cursor is on line 26. Search backward for "self" and land on its last occurrence above.',
+      instruction = 'Search backward for "self" using ?self to reach line 20',
       lines = pattern_lines,
       from = { 26, 0 },
       to   = { 20, 14 },  -- 'self' in 'self.listeners[event]' on line 20
@@ -105,7 +105,7 @@ local lesson1 = {
     -- 4. N to reverse search direction
     h.search({
       command = 'N',
-      instruction = 'Search forward for "EventEmitter", then press N to jump back to the previous occurrence.',
+      instruction = 'Search for "EventEmitter" then press N to jump back to line 3',
       lines = pattern_lines,
       from = { 1, 0 },
       to   = { 3, 6 },    -- line 3: 'local EventEmitter = {}' — N reverses back here
@@ -115,7 +115,7 @@ local lesson1 = {
     -- 5. Combined / and n for multi-hop
     h.search({
       command = '/',
-      instruction = 'Search for "callback" and press n to reach its second occurrence (line 16).',
+      instruction = 'Search for "callback" then press n to reach line 16',
       lines = pattern_lines,
       from = { 1, 0 },
       to   = { 16, 38 },  -- 'callback' in 'table.insert(self.listeners[event], callback)'
@@ -143,7 +143,7 @@ local lesson2 = {
     -- 1. * to jump to next occurrence of word
     h.search({
       command = '*',
-      instruction = 'Cursor is on "local" at line 1. Press * to jump to the next "local".',
+      instruction = 'Jump to the next "local" with *',
       lines = word_lines,
       from = { 1, 0 },    -- 'local' at start of line 1
       to   = { 2, 0 },    -- 'local' at start of line 2
@@ -153,7 +153,7 @@ local lesson2 = {
     -- 2. * then n to continue
     h.search({
       command = '*',
-      instruction = 'Cursor is on "local" at line 1. Press * then n to reach the third "local" (line 3).',
+      instruction = 'Jump to the third "local" using * then n',
       lines = word_lines,
       from = { 1, 0 },    -- 'local' at start of line 1
       to   = { 3, 0 },    -- 'local' at start of line 3
@@ -163,7 +163,7 @@ local lesson2 = {
     -- 3. # to jump backward
     h.search({
       command = '#',
-      instruction = 'Cursor is on "load_config" in line 17. Press # to jump backward to its definition on line 5.',
+      instruction = 'Jump back to the definition of "load_config" on line 5 with #',
       lines = word_lines,
       from = { 17, 12 },  -- 'load_config' in 'load_config(config_path)'
       to   = { 5, 15 },   -- 'local function load_config(path)' on line 5
@@ -173,7 +173,7 @@ local lesson2 = {
     -- 4. * on a function name
     h.search({
       command = '*',
-      instruction = 'Cursor is on "load_config" in line 5 (the definition). Press * to jump to its next call on line 17.',
+      instruction = 'Jump to the call of "load_config" on line 17 with *',
       lines = word_lines,
       from = { 5, 15 },   -- 'load_config' in 'local function load_config(path)'
       to   = { 17, 12 },  -- 'local cfg = load_config(config_path)'
@@ -183,7 +183,7 @@ local lesson2 = {
     -- 5. # then n to walk backward through occurrences
     h.search({
       command = '#',
-      instruction = 'Cursor is on "config_path" in line 17. Press # to jump backward to line 2.',
+      instruction = 'Jump backward to "config_path" on line 2 with #',
       lines = word_lines,
       from = { 17, 24 },  -- 'config_path' starts at col 24
       to   = { 2, 6 },    -- 'local config_path = ...' on line 2

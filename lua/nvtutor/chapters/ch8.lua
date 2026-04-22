@@ -76,7 +76,7 @@ local lesson1 = {
     -- 1. Ctrl-a increments by 1
     h.power({
       command = '<C-a>',
-      instruction = 'Line 1: cursor is on "version". Increment the value from 1 to 2 with Ctrl-a.',
+      instruction = 'Increment version from 1 to 2 with Ctrl-a',
       lines = number_lines,
       start = { 1, 6 },
       expected = {
@@ -92,7 +92,7 @@ local lesson1 = {
     -- 2. Ctrl-x decrements by 1
     h.power({
       command = '<C-x>',
-      instruction = 'Line 2: cursor is at the start. Decrement max_retry from 3 to 2 with Ctrl-x.',
+      instruction = 'Decrement max_retry from 3 to 2 with Ctrl-x',
       lines = number_lines,
       start = { 2, 0 },
       expected = {
@@ -108,7 +108,7 @@ local lesson1 = {
     -- 3. Count + Ctrl-a to add a larger amount
     h.power({
       command = '<C-a>',
-      instruction = 'Line 3: cursor at start. Increase timeout from 10 to 30 using a count with Ctrl-a.',
+      instruction = 'Increase timeout from 10 to 30 using 20 Ctrl-a',
       lines = number_lines,
       start = { 3, 0 },
       expected = {
@@ -124,7 +124,7 @@ local lesson1 = {
     -- 4. Count + Ctrl-x to subtract
     h.power({
       command = '<C-x>',
-      instruction = 'Line 5: cursor at start. Decrease threshold from 100 to 50 with a count and Ctrl-x.',
+      instruction = 'Decrease threshold from 100 to 50 using 50 Ctrl-x',
       lines = number_lines,
       start = { 5, 0 },
       expected = {
@@ -140,7 +140,7 @@ local lesson1 = {
     -- 5. Ctrl-a on pool_size with cursor before the digit
     h.power({
       command = '<C-a>',
-      instruction = 'Line 4: cursor is on "p" of "pool_size". Increment pool_size from 4 to 5 — cursor need not be on the digit.',
+      instruction = 'Increment pool_size from 4 to 5 with Ctrl-a',
       lines = number_lines,
       start = { 4, 6 },
       expected = {
@@ -174,7 +174,7 @@ local lesson2 = {
     -- 1. Simple macro: capitalise first letter then advance
     h.power({
       command = 'q',
-      instruction = 'Lines 1-5 each have a lowercase value in quotes. Record a macro in register "a" that capitalises the first letter of the quoted word and moves to the next line. Run it on line 1, then replay with @a on lines 2-5.',
+      instruction = 'Capitalise the first letter of each quoted word on lines 1-5 using a macro in register "a"',
       lines = macro_lines,
       start = { 1, 0 },
       expected = {
@@ -191,7 +191,7 @@ local lesson2 = {
     -- 2. Macro with substitution pattern
     h.power({
       command = 'q',
-      instruction = 'Record a macro in "b" that changes "const" to "let" on the current line and moves down. Apply it across all 5 lines starting from line 1.',
+      instruction = 'Change "const" to "let" on all 5 lines using a macro in register "b"',
       lines = macro_lines,
       start = { 1, 0 },
       expected = {
@@ -208,7 +208,7 @@ local lesson2 = {
     -- 3. @@ to replay last macro
     h.power({
       command = '@@',
-      instruction = 'The macro in "a" capitalises a quoted word and moves down. After running @a on line 1, use @@ to apply the same macro to line 2.',
+      instruction = 'Run @a on line 1, then repeat on line 2 with @@',
       lines = macro_lines,
       start = { 1, 0 },
       expected = {
@@ -225,7 +225,7 @@ local lesson2 = {
     -- 4. Counted macro replay
     h.power({
       command = '@',
-      instruction = 'Record a macro in "c" that appends a semicolon to the end of the line and moves down. Use 5@c to run it across all 5 lines at once.',
+      instruction = 'Append a semicolon to all 5 lines using a macro in register "c" with 5@c',
       lines = macro_lines,
       start = { 1, 0 },
       expected = {
@@ -242,7 +242,7 @@ local lesson2 = {
     -- 5. Macro that inserts surrounding quotes
     h.power({
       command = 'q',
-      instruction = 'Record a macro in "d" that wraps the first word on the line in backticks (`) and moves down. Apply to all 5 lines.',
+      instruction = 'Wrap the first word in backticks on all 5 lines using a macro in register "d"',
       lines = macro_lines,
       start = { 1, 0 },
       expected = {
@@ -279,7 +279,7 @@ local lesson3 = {
     -- 1. % from opening to closing paren
     h.movement({
       command = '%',
-      instruction = 'Line 1: cursor is on the opening "{" of the function body. Jump to the matching closing "}" with %.',
+      instruction = 'Jump from the opening "{" to its matching closing "}" with %',
       lines = bracket_lines,
       from = { 1, 23 },   -- '{' at end of 'function process(data) {'
       to   = { 8, 0 },    -- matching '}' on line 8
@@ -289,7 +289,7 @@ local lesson3 = {
     -- 2. % from closing to opening
     h.movement({
       command = '%',
-      instruction = 'Line 8: cursor is on the closing "}". Jump back to the matching opening "{" on line 1 with %.',
+      instruction = 'Jump from the closing "}" back to the matching opening "{" on line 1 with %',
       lines = bracket_lines,
       from = { 8, 0 },
       to   = { 1, 23 },
@@ -299,7 +299,7 @@ local lesson3 = {
     -- 3. % on inner bracket
     h.movement({
       command = '%',
-      instruction = 'Line 2: cursor is on the "(" after "if". Jump to its matching ")" with %.',
+      instruction = 'Jump from the "(" after "if" to its matching ")" with %',
       lines = bracket_lines,
       from = { 2, 5 },    -- '(' in 'if (data.valid)'
       to   = { 2, 16 },   -- matching ')'
@@ -309,7 +309,7 @@ local lesson3 = {
     -- 4. % on square bracket
     h.movement({
       command = '%',
-      instruction = 'Line 4: cursor is on the opening "[" of the return tuple. Jump to the closing "]" with %.',
+      instruction = 'Jump from the opening "[" to the closing "]" in the return tuple with %',
       lines = bracket_lines,
       from = { 4, 11 },   -- '[' in 'return [result, null];'
       to   = { 4, 24 },   -- ']'
@@ -319,7 +319,7 @@ local lesson3 = {
     -- 5. d% to delete a block
     h.vim_language({
       command = 'd%',
-      instruction = 'Line 10: cursor is on the "{" of the object literal. Delete the entire object with d%.',
+      instruction = 'Delete the entire object literal with d%',
       lines = bracket_lines,
       start = { 10, 23 },  -- '{' in 'process({ valid: ... })'
       expected = {
@@ -359,7 +359,7 @@ local lesson4 = {
     -- 1. Append text with A then dot-repeat across lines
     h.power({
       command = '.',
-      instruction = 'Add " -- checked" to the end of line 1 with A -- checked<Esc>. Then j. twice for lines 2-3.',
+      instruction = 'Append " -- checked" to lines 1-3 using A then j. to repeat',
       lines = {
         'validate(input)',
         'process(data)',
@@ -380,7 +380,7 @@ local lesson4 = {
     -- 2. Append semicolons with A then dot-repeat
     h.power({
       command = '.',
-      instruction = 'Line 1 already has a semicolon. Lines 2-4 are missing one. Add a semicolon to line 2 with A;<Esc>, then use j. for lines 3 and 4.',
+      instruction = 'Add a trailing semicolon to lines 2-4 using A; then j. to repeat',
       lines = {
         'const alpha = 1;',
         'const beta  = 2',
@@ -400,7 +400,7 @@ local lesson4 = {
     -- 3. Delete a trailing comment and dot-repeat
     h.power({
       command = '.',
-      instruction = 'Each line ends with a " -- TODO" comment. Delete it from line 1 with dtj (or f-d$), then move down and use . to repeat on lines 2-3.',
+      instruction = 'Delete " -- TODO" from each line using d$ then j. to repeat',
       lines = {
         'local alpha = 1 -- TODO',
         'local beta  = 2 -- TODO',
@@ -418,7 +418,7 @@ local lesson4 = {
     -- 4. Indent a block and dot-repeat
     h.power({
       command = '.',
-      instruction = 'Lines 2-4 are under-indented by one level. Indent line 2 with >> then use j. to indent lines 3 and 4.',
+      instruction = 'Indent lines 2-4 by one level using >> then j. to repeat',
       lines = {
         'function foo() {',
         'const x = 1;',
@@ -440,7 +440,7 @@ local lesson4 = {
     -- 5. Replace character and dot-repeat
     h.power({
       command = '.',
-      instruction = 'Lines 1-4 each contain a dash "-" that should be an underscore "_". Replace the first "-" on line 1 with r_, then use f-. on each subsequent line.',
+      instruction = 'Replace the first "-" with "_" on each line using r_ then f-. to repeat',
       lines = {
         'my-module = require("my-module")',
         'my-helper = require("my-helper")',
@@ -478,7 +478,7 @@ local lesson5 = {
     -- 1. J joins two lines
     h.power({
       command = 'J',
-      instruction = 'Lines 1-2 form a split assignment. Join them into one line with J.',
+      instruction = 'Join lines 1 and 2 into one line with J',
       lines = join_lines,
       start = { 1, 0 },
       expected = {
@@ -494,7 +494,7 @@ local lesson5 = {
     -- 2. J twice to join three lines
     h.power({
       command = 'J',
-      instruction = 'Lines 1 and 2 are already one line in the expected output — now join lines 3-4 ("const farewell" and its value) into one line.',
+      instruction = 'Join "const farewell" with its value on the next line using J',
       lines = {
         'const greeting = "Hello, world!";',
         'const farewell =',
@@ -515,7 +515,7 @@ local lesson5 = {
     -- 3. 3J to join three lines at once
     h.power({
       command = 'J',
-      instruction = 'Lines 3-5 (const message and two continuation lines) should become one line. Use 3J to join all three.',
+      instruction = 'Collapse the 3-line message assignment into one line with 3J',
       lines = {
         'const greeting = "Hello, world!";',
         'const farewell = "Goodbye, world!";',
@@ -535,7 +535,7 @@ local lesson5 = {
     -- 4. gJ join without space
     h.power({
       command = 'gJ',
-      instruction = 'Lines 1-2 form a URL split across two lines. Join them with gJ (no space inserted).',
+      instruction = 'Join the split URL into one line without a space using gJ',
       lines = {
         'https://example.com',
         '/api/v1/users',
@@ -554,7 +554,7 @@ local lesson5 = {
     -- 5. J then dot-repeat
     h.power({
       command = 'J',
-      instruction = 'Four pairs of lines need joining. Join lines 1-2 with J, then use j. to join each subsequent pair.',
+      instruction = 'Join all four pairs of lines using J then j. to repeat',
       lines = {
         'alpha =',
         '  1',
@@ -599,7 +599,7 @@ local lesson6 = {
     -- 1. ~ to toggle a single character
     h.power({
       command = '~',
-      instruction = 'Line 1: cursor is on "t" of "the". Toggle it to uppercase "T" with ~.',
+      instruction = 'Toggle "t" to uppercase "T" with ~',
       lines = case_lines,
       start = { 1, 0 },
       expected = {
@@ -614,7 +614,7 @@ local lesson6 = {
     -- 2. gUiw to uppercase a word
     h.power({
       command = 'gU',
-      instruction = 'Line 3: cursor is on "Mixed". Uppercase the whole word with gUiw.',
+      instruction = 'Uppercase the word "Mixed" with gUiw',
       lines = case_lines,
       start = { 3, 2 },   -- 'M' of 'Mixed'
       expected = {
@@ -629,7 +629,7 @@ local lesson6 = {
     -- 3. guiw to lowercase a word
     h.power({
       command = 'gu',
-      instruction = 'Line 2: cursor is on "JUMPS". Lowercase just that word with guiw.',
+      instruction = 'Lowercase the word "JUMPS" with guiw',
       lines = case_lines,
       start = { 2, 0 },
       expected = {
@@ -644,7 +644,7 @@ local lesson6 = {
     -- 4. gU$ to uppercase to end of line
     h.power({
       command = 'gU',
-      instruction = 'Line 4: cursor is on "t" of "to". Uppercase from the cursor to the end of the line with gU$.',
+      instruction = 'Uppercase from "to" to end of line with gU$',
       lines = case_lines,
       start = { 4, 13 },  -- 't' of 'to' in 'another line to transform'
       expected = {
@@ -659,7 +659,7 @@ local lesson6 = {
     -- 5. gu$ to lowercase entire line
     h.power({
       command = 'gu',
-      instruction = 'Line 2: cursor is at the start. Lowercase the entire line with gu$.',
+      instruction = 'Lowercase the entire line with gu$',
       lines = case_lines,
       start = { 2, 0 },
       expected = {

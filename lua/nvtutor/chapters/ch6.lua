@@ -193,7 +193,7 @@ local lesson2 = {
     -- 4. Jump using gg with count
     h.movement({
       command = 'gg',
-      instruction = 'Cursor is on line 20. Jump to line 7 (eta = 7) with 7gg.',
+      instruction = 'Jump to line 7 with 7gg',
       lines = numbered_lines,
       from = { 20, 0 },
       to   = { 7, 0 },
@@ -203,7 +203,7 @@ local lesson2 = {
     -- 5. Relative jump: from middle to near top
     h.movement({
       command = 'G',
-      instruction = 'Cursor is on line 15. Jump back to line 3 (gamma = 3) with 3G.',
+      instruction = 'Jump back to line 3 with 3G',
       lines = numbered_lines,
       from = { 15, 0 },
       to   = { 3, 0 },
@@ -230,7 +230,7 @@ local lesson3 = {
     -- 1. } forward one paragraph
     h.movement({
       command = '}',
-      instruction = 'Cursor is on line 1 (first paragraph). Press } to jump to the blank line after the first paragraph.',
+      instruction = 'Jump to the blank line after the first paragraph with }',
       lines = para_lines,
       from = { 1, 0 },
       to   = { 4, 0 },   -- blank line between paragraph 1 and 2
@@ -240,7 +240,7 @@ local lesson3 = {
     -- 2. } forward two paragraphs
     h.movement({
       command = '}',
-      instruction = 'Cursor is on line 1. Press } twice to reach the blank line after the second paragraph (line 8).',
+      instruction = 'Jump forward two paragraphs with }} to reach line 8',
       lines = para_lines,
       from = { 1, 0 },
       to   = { 8, 0 },
@@ -250,7 +250,7 @@ local lesson3 = {
     -- 3. { backward
     h.movement({
       command = '{',
-      instruction = 'Cursor is on line 13 (fourth paragraph). Press { to jump back to the blank line before this paragraph (line 12).',
+      instruction = 'Jump back to the blank line before this paragraph with {',
       lines = para_lines,
       from = { 13, 0 },
       to   = { 12, 0 },
@@ -260,7 +260,7 @@ local lesson3 = {
     -- 4. { backward multiple
     h.movement({
       command = '{',
-      instruction = 'Cursor is on line 15 (last paragraph). Press { four times to reach line 1.',
+      instruction = 'Jump back to line 1 by pressing { four times',
       lines = para_lines,
       from = { 15, 0 },
       to   = { 1, 0 },
@@ -270,7 +270,7 @@ local lesson3 = {
     -- 5. d} to delete to next paragraph
     h.vim_language({
       command = 'd}',
-      instruction = 'Cursor is on line 5 (start of second paragraph). Delete to the end of this paragraph with d}.',
+      instruction = 'Delete the second paragraph with d}',
       lines = para_lines,
       start = { 5, 0 },
       expected = {

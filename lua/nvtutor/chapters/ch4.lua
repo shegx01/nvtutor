@@ -13,7 +13,7 @@ M.lessons = {
       -- Challenge 1: o — open line below
       h.editing({
         command = 'o',
-        instruction = 'Open a new line below "local x = 1" and type "local y = 2".',
+        instruction = 'Add "local y = 2" on a new line below. Press o then type: local y = 2',
         lines = {
           'local x = 1',
           'local z = 3',
@@ -31,7 +31,7 @@ M.lessons = {
       -- Challenge 2: O — open line above
       h.editing({
         command = 'O',
-        instruction = 'Insert a blank comment line "-- initialise" above the "local count = 0" line.',
+        instruction = 'Add "-- initialise" on a new line above. Press O then type: -- initialise',
         lines = {
           'function run()',
           'local count = 0',
@@ -51,7 +51,7 @@ M.lessons = {
       -- Challenge 3: o at end of function to add a return
       h.editing({
         command = 'o',
-        instruction = 'Add "  return total" on a new line after "  total = total + n".',
+        instruction = 'Add "  return total" on a new line below. Press o then type:   return total',
         lines = {
           'local function add(n)',
           '  local total = 0',
@@ -81,7 +81,7 @@ M.lessons = {
       -- Challenge 1: p after a character yank
       h.editing({
         command = 'ylp',
-        instruction = 'Yank the "H" in "Hello" and paste a copy of it immediately after the "H".',
+        instruction = 'Turn "Hello" into "HHello" by yanking "H" and pasting with ylp.',
         lines = {
           'Hello',
         },
@@ -96,7 +96,7 @@ M.lessons = {
       -- Challenge 2: P before cursor
       h.editing({
         command = 'ylP',
-        instruction = 'Yank the "!" at column 5 and paste it before itself to double the exclamation.',
+        instruction = 'Turn "Hello!" into "Hello!!" by yanking "!" and pasting before with ylP.',
         lines = {
           'Hello!',
         },
@@ -111,7 +111,7 @@ M.lessons = {
       -- Challenge 3: linewise yank and paste order
       h.editing({
         command = 'yyp',
-        instruction = 'Duplicate line 3 by yanking and pasting it below itself.',
+        instruction = 'Duplicate "cherry" below itself using yyp.',
         lines = {
           'apple',
           'banana',
@@ -133,7 +133,7 @@ M.lessons = {
       -- Challenge 4: paste a line above with P
       h.editing({
         command = 'jyykP',
-        instruction = 'Move to line 2, yank it, then paste it above line 1.',
+        instruction = 'Copy "local a = 1" to above line 1 using jyykP.',
         lines = {
           'local b = 2',
           'local a = 1',
@@ -161,7 +161,7 @@ M.lessons = {
       -- Challenge 1: fix a single typo
       h.editing({
         command = 'r',
-        instruction = 'The word "teh" should be "the". The cursor is on "t". Replace the "e" (at col 1) with "h" and "h" (at col 2) with "e".',
+        instruction = 'Fix "teh" to "the" by replacing two characters with r.',
         lines = {
           'teh quick brown fox',
         },
@@ -176,7 +176,7 @@ M.lessons = {
       -- Challenge 2: replace a digit
       h.editing({
         command = 'r',
-        instruction = 'Change the version from "1.0.0" to "2.0.0" by replacing the first character.',
+        instruction = 'Change "1.0.0" to "2.0.0" by replacing the "1" with r2.',
         lines = {
           'version = "1.0.0"',
         },
@@ -191,7 +191,7 @@ M.lessons = {
       -- Challenge 3: replace to fix wrong operator
       h.editing({
         command = 'r',
-        instruction = 'The condition uses "=" (assignment) instead of ">" (greater-than). Fix it.',
+        instruction = 'Fix the bug: change "=" to ">" in the condition using r>.',
         lines = {
           'if count = 10 then',
         },
@@ -214,7 +214,7 @@ M.lessons = {
       -- Challenge 1: s on a single character
       h.editing({
         command = 's',
-        instruction = 'The "x" in "axle" is wrong — it should read "able". Substitute "x" with "bl".',
+        instruction = 'Change "axle" to "able" by substituting "x" with "bl" using s.',
         lines = {
           'axle seating',
         },
@@ -229,7 +229,7 @@ M.lessons = {
       -- Challenge 2: s with a count (substitute multiple chars)
       h.editing({
         command = 's',
-        instruction = 'Replace "foo" (3 chars starting at col 6) with "bar" using 3s.',
+        instruction = 'Change "foo" to "bar" using 3s then type: bar',
         lines = {
           'local foo_count = 0',
         },
@@ -244,7 +244,7 @@ M.lessons = {
       -- Challenge 3: S to rewrite a whole line
       h.editing({
         command = 'S',
-        instruction = 'The debug line needs to be completely replaced. Use S to clear it and type "  return nil" instead.',
+        instruction = 'Replace the debug line with "  return nil" using S then type: return nil',
         lines = {
           'function find()',
           '  print("FIXME")',
@@ -271,7 +271,7 @@ M.lessons = {
       -- Challenge 1: i to insert before
       h.editing({
         command = 'i',
-        instruction = 'The cursor is on "w" in "world". Insert "beautiful " before "world" using i.',
+        instruction = 'Turn "Hello world!" into "Hello beautiful world!". Press i then type: beautiful ',
         lines = {
           'Hello world!',
         },
@@ -286,7 +286,7 @@ M.lessons = {
       -- Challenge 2: a to append after
       h.editing({
         command = 'a',
-        instruction = 'The cursor is on "o" in "Hello". Append ", Vim" after the "o" using a.',
+        instruction = 'Turn "Hello world" into "Hello, Vim world". Press a then type: , Vim',
         lines = {
           'Hello world',
         },
@@ -301,7 +301,7 @@ M.lessons = {
       -- Challenge 3: choose i vs a correctly
       h.editing({
         command = 'a',
-        instruction = 'Cursor is on the closing ) of greet(). Append " -- called" as a trailing comment.',
+        instruction = 'Turn "greet()" into "greet() -- called". Press a then type:  -- called',
         lines = {
           'greet()',
         },
@@ -324,7 +324,7 @@ M.lessons = {
       -- Challenge 1: A to append at end of line
       h.editing({
         command = 'A',
-        instruction = 'Add " -- deprecated" at the end of the function signature line. The cursor is anywhere on that line.',
+        instruction = 'Add " -- deprecated" to the end of the signature using A.',
         lines = {
           'function old_api()',
           '  return nil',
@@ -343,7 +343,7 @@ M.lessons = {
       -- Challenge 2: I to insert at line start
       h.editing({
         command = 'I',
-        instruction = 'Add "-- " at the start of the print line to comment it out. Cursor is in the middle of the line.',
+        instruction = 'Comment out the print line by adding "-- " at the start using I.',
         lines = {
           '  print("debug value:", x)',
         },
@@ -358,7 +358,7 @@ M.lessons = {
       -- Challenge 3: A to complete an incomplete statement
       h.editing({
         command = 'A',
-        instruction = 'The assignment is missing its value. Use A to append " = true" at the end.',
+        instruction = 'Complete "local verbose" to "local verbose = true" using A.',
         lines = {
           'local verbose',
           'local quiet = false',
@@ -383,7 +383,7 @@ M.lessons = {
       -- Challenge 1: D to delete to end of line
       h.editing({
         command = 'D',
-        instruction = 'The cursor is on the space before "-- REMOVE THIS". Delete from there to the end of the line.',
+        instruction = 'Strip the trailing " -- REMOVE THIS" from line 1 using D.',
         lines = {
           'local x = 10 -- REMOVE THIS',
           'local y = 20',
@@ -400,7 +400,7 @@ M.lessons = {
       -- Challenge 2: C to change to end of line
       h.editing({
         command = 'C',
-        instruction = 'Cursor is at the start of the wrong return value. Use C to change "false" to "true".',
+        instruction = 'Change "return false" to "return true" using C then type: true',
         lines = {
           'local function is_ready()',
           '  return false',
@@ -419,7 +419,7 @@ M.lessons = {
       -- Challenge 3: cc to rewrite an entire line
       h.editing({
         command = 'cc',
-        instruction = 'Rewrite the entire second line from scratch to say "  local sum = a + b".',
+        instruction = 'Replace the placeholder line with "  local sum = a + b" using cc.',
         lines = {
           'local function add(a, b)',
           '  return nil -- placeholder',
@@ -438,7 +438,7 @@ M.lessons = {
       -- Challenge 4: D to strip trailing content then C on another line
       h.editing({
         command = 'D',
-        instruction = 'Delete the trailing " | unused" annotation from the end of line 1.',
+        instruction = 'Strip " | unused" from "local name" using D.',
         lines = {
           'local name | unused',
           'local age = 25',
