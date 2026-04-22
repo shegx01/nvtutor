@@ -134,7 +134,7 @@ local lesson1 = {
       command = 'cgn',
       instruction = 'Fix all "teh" typos to "the" using /teh then cgn + . repeat',
       lines = {
-        'Teh quick brown fox jumps over teh lazy dog.',
+        'teh quick brown fox jumps over teh lazy dog.',
         'Pack my box with five teh dozen liquor jugs.',
         'How vexingly quick daft teh zebras jump.',
       },
@@ -187,7 +187,7 @@ local lesson2 = {
       command = 'xp',
       instruction = 'Fix "teh" to "the" by swapping the transposed chars with xp',
       lines = { 'Fix teh typo here.' },
-      start = { 1, 4 },  -- cursor on 'e' in 'teh' (t=4, e=5, h=6 — 0-indexed: t=4)
+      start = { 1, 5 },  -- cursor on 'e' in 'teh' (t=4, e=5, h=6)
       expected = { 'Fix the typo here.' },
       optimal = 2,
       hint = 'xp: x deletes the char under the cursor and p puts it after the next char.',
@@ -217,7 +217,7 @@ local lesson2 = {
       command = 'xp',
       instruction = 'Fix "recieve" to "receive" — swap the "ie" to "ei" with xp',
       lines = { 'Please recieve the package.' },
-      start = { 1, 11 },  -- cursor on 'i' in 'recieve'
+      start = { 1, 10 },  -- cursor on 'i' in 'recieve' (r=7,e=8,c=9,i=10)
       expected = { 'Please receive the package.' },
       optimal = 2,
       hint = 'xp on the "i" swaps it with the "e" that follows, correcting the order.',

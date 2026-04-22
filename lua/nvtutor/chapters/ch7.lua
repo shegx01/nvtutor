@@ -228,7 +228,7 @@ local lesson3 = {
       lines = regex_lines,
       from = { 1, 0 },
       to   = { 1, 4 },   -- '123' starting at col 4
-      optimal = 5,         -- /\d\+<CR>
+      optimal = 6,         -- /\d\+<CR>
       hint = '\\d matches one digit, \\+ means one or more. The cursor lands on the first digit.',
       optimal_solution = '/\\d\\+\r',
     }),
@@ -238,7 +238,7 @@ local lesson3 = {
       instruction = 'Jump to "foo" on line 4 by searching /foo',
       lines = regex_lines,
       from = { 1, 0 },
-      to   = { 4, 15 },  -- 'foo' starts at col 15 on line 4
+      to   = { 4, 14 },  -- 'foo' starts at col 14 on line 4
       optimal = 5,
       hint = '/foo is a literal search. \\w\\+ would match any word — try both to compare.',
       optimal_solution = '/foo\r',
@@ -249,7 +249,7 @@ local lesson3 = {
       instruction = 'Search for a 3-char pattern "3/4" using /3.4',
       lines = regex_lines,
       from = { 1, 0 },
-      to   = { 5, 9 },   -- '3/4' on line 5
+      to   = { 5, 8 },   -- '3' of '3/4' on line 5 (col 8)
       optimal = 5,
       hint = '. in Vim regex matches any character. /3.4 matches "3" + any char + "4".',
       optimal_solution = '/3.4\r',
@@ -260,10 +260,10 @@ local lesson3 = {
       instruction = 'Find all digit sequences with /\\d\\+ then press n to reach line 3',
       lines = regex_lines,
       from = { 1, 0 },
-      to   = { 3, 14 },  -- digits in 'item_price = 19.99' -> '19' at col 14
-      optimal = 6,         -- /\d\+<CR> n
-      hint = '/\\d\\+<CR> lands on "123" on line 1. Press n to advance to the next match.',
-      optimal_solution = '/\\d\\+\rn',
+      to   = { 3, 13 },  -- '19' in 'item_price = 19.99' starts at col 13
+      optimal = 10,        -- /\d\+<CR>nnnnn (6 matches before reaching line 3 col 13)
+      hint = '/\\d\\+ matches digit sequences. Keep pressing n to advance through matches.',
+      optimal_solution = '/\\d\\+<CR> then n five times',
     }),
   },
 }
@@ -323,7 +323,7 @@ local lesson4 = {
       lines = vmagic_lines,
       from = { 3, 0 },
       to   = { 2, 6 },   -- 'read' on line 2 col 6
-      optimal = 21,
+      optimal = 23,
       hint = '\\v(read|write|append) — no extra backslashes needed with very magic mode.',
       optimal_solution = '/\\v(read|write|append)\r',
     }),
@@ -335,7 +335,7 @@ local lesson4 = {
 local sub_lines = {
   'The colour of the sky is colour blue.',
   'The colour of the sea is colour teal.',
-  'Colour is everywhere in nature.',
+  'colour is everywhere in nature.',
 }
 
 local lesson5 = {
@@ -365,7 +365,7 @@ local lesson5 = {
       expected = {
         'The color of the sky is color blue.',
         'The color of the sea is color teal.',
-        'Color is everywhere in nature.',
+        'color is everywhere in nature.',
       },
       optimal = 20,   -- :%s/colour/color/g<CR>
       hint = ':%s applies to every line. The /g flag replaces all matches per line.',
@@ -378,15 +378,15 @@ local lesson5 = {
       lines = {
         'The color of the sky is color blue.',
         'The color of the sea is color teal.',
-        'Color is everywhere in nature.',
+        'color is everywhere in nature.',
       },
       start = { 1, 0 },
       expected = {
         'The hue of the sky is hue blue.',
         'The hue of the sea is hue teal.',
-        'Color is everywhere in nature.',
+        'color is everywhere in nature.',
       },
-      optimal = 20,
+      optimal = 18,
       hint = ':1,2s limits the substitution to lines 1 and 2. Line 3 is untouched.',
       optimal_solution = ':1,2s/color/hue/g\r',
     }),
@@ -397,7 +397,7 @@ local lesson5 = {
       lines = {
         'The hue of the sky is hue blue.',
         'The hue of the sea is hue teal.',
-        'Color is everywhere in nature.',
+        'color is everywhere in nature.',
       },
       start = { 3, 0 },
       expected = {
@@ -424,7 +424,7 @@ local lesson5 = {
         'The tone of the sea is tone teal.',
         'tone is everywhere in nature.',
       },
-      optimal = 17,
+      optimal = 16,
       hint = 'The i flag makes the match case-insensitive, so "Hue" and "hue" are both replaced.',
       optimal_solution = ':%s/hue/tone/gi\r',
     }),
@@ -473,7 +473,7 @@ local lesson6 = {
         'ERROR: connection refused',
         'INFO:  retrying connection',
       },
-      optimal = 12,   -- :g/DEBUG/d<CR>
+      optimal = 11,   -- :g/DEBUG/d<CR>
       hint = ':g/DEBUG/d runs d (delete) on every line containing "DEBUG".',
       optimal_solution = ':g/DEBUG/d\r',
     }),
@@ -493,7 +493,7 @@ local lesson6 = {
         'INFO:  config loaded',
         'INFO:  retrying connection',
       },
-      optimal = 11,
+      optimal = 10,
       hint = ':v/INFO/d deletes every line that does NOT contain "INFO".',
       optimal_solution = ':v/INFO/d\r',
     }),
@@ -512,7 +512,7 @@ local lesson6 = {
         'INFO:  config loaded [logged]',
         'INFO:  retrying connection [logged]',
       },
-      optimal = 22,
+      optimal = 24,
       hint = ':g/INFO/norm runs a Normal-mode command on each match. A enters Insert at end of line.',
       optimal_solution = ':g/INFO/norm A [logged]\r',
     }),
@@ -531,7 +531,7 @@ local lesson6 = {
         'INFO: config loaded',
         'ERROR connection refused',
       },
-      optimal = 22,
+      optimal = 23,
       hint = ':g/INFO/s runs a substitute only on INFO lines. Non-matching lines are untouched.',
       optimal_solution = ':g/INFO/s/INFO/INFO:/g\r',
     }),
