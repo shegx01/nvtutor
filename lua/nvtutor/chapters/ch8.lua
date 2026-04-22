@@ -677,11 +677,11 @@ local lesson6 = {
 -- ─── Lesson 7 — :norm on Ranges ──────────────────────────────────────────────
 
 local norm_lines = {
-  'function alpha()',
-  'function beta()',
-  'function gamma()',
-  'function delta()',
-  'function epsilon()',
+  'function alpha',
+  'function beta',
+  'function gamma',
+  'function delta',
+  'function epsilon',
 }
 
 local norm_comment_lines = {
@@ -714,11 +714,11 @@ local lesson7 = {
       lines = norm_lines,
       start = { 1, 0 },
       expected = {
-        'function alpha()()',
-        'function beta()()',
-        'function gamma()()',
-        'function delta()()',
-        'function epsilon()()',
+        'function alpha()',
+        'function beta()',
+        'function gamma()',
+        'function delta()',
+        'function epsilon()',
       },
       optimal = 11,   -- :%norm A()<CR>
       hint = ':%norm A() runs A (append) then "()" on every line in the buffer.',

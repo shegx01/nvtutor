@@ -66,7 +66,7 @@ M.lessons = {
       -- Challenge 4: combine j and k
       h.movement({
         command = 'jk',
-        instruction = 'Land on line 3 by going down to line 6 then back up with j and k.',
+        instruction = 'Reach line 3 using j and k (try overshooting then correcting).',
         lines = h.default_prose,
         from = { 1, 0 },
         to   = { 3, 0 },
@@ -406,10 +406,10 @@ M.lessons = {
         hint = 'L places the cursor on the bottommost visible line',
         optimal_solution = 'L — jump to bottom of screen',
       }),
-      -- Challenge 4: center screen on cursor with zz
+      -- Challenge 4: use zt to scroll cursor to top, then H to verify
       h.movement({
-        command = 'zz',
-        instruction = 'Center the screen on the cursor with zz',
+        command = 'zt',
+        instruction = 'Scroll so the cursor line is at the top using zt, then jump to line 1 with gg.',
         lines = {
           'Line  1: The quick brown fox jumps over the lazy dog.',
           'Line  2: Pack my box with five dozen liquor jugs.',
@@ -433,11 +433,11 @@ M.lessons = {
           'Line 20: The jay, pig, fox, zebra and my wolves quack!',
         },
         from = { 10, 0 },
-        to   = { 10, 0 },
-        optimal = 2,
-        time = 4.0,
-        hint = 'zz scrolls the view so the cursor line is centered — cursor does not move',
-        optimal_solution = 'zz — center screen on cursor',
+        to   = { 1, 0 },
+        optimal = 4,
+        time = 5.0,
+        hint = 'zt scrolls the view so cursor is at the top of the screen. Then gg jumps to line 1.',
+        optimal_solution = 'zt then gg',
       }),
     },
   },

@@ -161,7 +161,7 @@ M.lessons = {
       -- Challenge 1: fix a single typo
       h.editing({
         command = 'r',
-        instruction = 'Fix "teh" to "the" by replacing two characters with r.',
+        instruction = 'Fix "teh" to "the" using r twice — once per wrong character.',
         lines = {
           'teh quick brown fox',
         },

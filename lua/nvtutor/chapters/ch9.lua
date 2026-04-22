@@ -433,12 +433,12 @@ local lesson5 = {
     'These settings are typically placed in init.lua or init.vim.',
   },
   challenges = {
-    -- 1. :set scrolloff= to change the scroll margin
-    h.power({
-      command = ':set',
-      instruction = 'Set scrolloff to 8 with :set scrolloff=8',
+    -- 1. Add scrolloff setting to the config buffer
+    h.editing({
+      command = 'Go',
+      instruction = 'Add "set scrolloff=8" at the end of the buffer using Go.',
       lines = config_lines,
-      start = { 1, 0 },
+      start = { 5, 0 },
       expected = {
         'set noswapfile',
         'set number',
@@ -447,15 +447,15 @@ local lesson5 = {
         'set tabstop=2',
         'set scrolloff=8',
       },
-      optimal = 17,  -- :set scrolloff=8<CR> (appended as new line via o)
-      hint = ':set scrolloff=8 takes effect immediately. You can also append it to the buffer.',
+      optimal = 17,
+      hint = 'G jumps to last line, o opens new line below. Type "set scrolloff=8" then Esc.',
     }),
-    -- 2. :set inccommand= to enable live preview
-    h.power({
-      command = ':set',
-      instruction = 'Enable live substitution preview with :set inccommand=nosplit',
+    -- 2. Add inccommand setting
+    h.editing({
+      command = 'Go',
+      instruction = 'Add "set inccommand=nosplit" at the end using Go.',
       lines = config_lines,
-      start = { 1, 0 },
+      start = { 5, 0 },
       expected = {
         'set noswapfile',
         'set number',
@@ -464,15 +464,15 @@ local lesson5 = {
         'set tabstop=2',
         'set inccommand=nosplit',
       },
-      optimal = 23,  -- :set inccommand=nosplit<CR>
-      hint = ':set inccommand=nosplit makes :s/old/new show matches highlighted before you confirm.',
+      optimal = 24,
+      hint = 'G then o. Type "set inccommand=nosplit" then Esc.',
     }),
-    -- 3. :set undofile to enable persistent undo
-    h.power({
-      command = ':set',
-      instruction = 'Enable persistent undo with :set undofile',
+    -- 3. Add undofile setting
+    h.editing({
+      command = 'Go',
+      instruction = 'Add "set undofile" at the end using Go.',
       lines = config_lines,
-      start = { 1, 0 },
+      start = { 5, 0 },
       expected = {
         'set noswapfile',
         'set number',
@@ -481,8 +481,8 @@ local lesson5 = {
         'set tabstop=2',
         'set undofile',
       },
-      optimal = 13,  -- :set undofile<CR>
-      hint = ':set undofile saves undo history to disk so u works even after closing the file.',
+      optimal = 14,
+      hint = 'G then o. Type "set undofile" then Esc.',
     }),
   },
 }

@@ -112,13 +112,13 @@ M.lessons = {
       -- Challenge 2: delete a word with dw
       h.editing({
         command = 'dw',
-        instruction = 'Delete "very " to get "This is a important line." using dw.',
+        instruction = 'Delete the word "very" and its trailing space using dw.',
         lines = {
-          'This is a very important line.',
+          'Remove the very obvious redundancy here.',
         },
-        start = { 1, 10 },
+        start = { 1, 11 },
         expected = {
-          'This is a important line.',
+          'Remove the obvious redundancy here.',
         },
         optimal = 2,
         time = 5.0,
@@ -580,19 +580,19 @@ M.lessons = {
     description = 'gv reselects the last visual selection. Inside visual mode, o flips the cursor to the other end of the selection so you can extend or shrink from either side.',
     advanced = true,
     challenges = {
-      -- Challenge 1: reselect last visual selection with gv
+      -- Challenge 1: select, deselect, then reselect with gv
       h.visual({
         command = 'gv',
-        instruction = 'Reselect the previous visual region with gv',
+        instruction = 'Select "quick" with ve, press Esc, then reselect it with gv.',
         lines = {
           'The quick brown fox jumps over the lazy dog.',
         },
         start = { 1, 4 },
         target_region = { { 1, 4 }, { 1, 8 } },
-        optimal = 2,
-        time = 6.0,
-        hint = 'gv immediately restores the last visual selection — no cursor movement needed',
-        optimal_solution = 'gv — reselect last visual',
+        optimal = 4,
+        time = 8.0,
+        hint = 've selects "quick", Esc deselects, gv brings the selection back instantly.',
+        optimal_solution = 've<Esc>gv',
       }),
       -- Challenge 2: flip to other end of selection with o
       h.visual({
