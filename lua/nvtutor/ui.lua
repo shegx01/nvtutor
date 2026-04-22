@@ -768,9 +768,59 @@ function M.show_stats(progress_state)
 
   -- Total time
   local total_seconds = progress_state.total_time or 0
-  local minutes = math.floor(total_seconds / 60)
-  local seconds = math.floor(total_seconds % 60)
-  push(string.format('  Total practice time: %dm %ds', minutes, seconds))
+  local total_min = math.floor(total_seconds / 60)
+  local total_sec = math.floor(total_seconds % 60)
+  push(string.format('  Total practice time: %dm %ds', total_min, total_sec))
+
+  -- Today's practice
+  local today = os.date('%Y-%m-%d')
+  local daily = progress_state.daily_practice or {}
+  local today_secs = daily[today] or 0
+  local today_min = math.floor(today_secs / 60)
+  local today_sec = math.floor(today_secs % 60)
+  push(string.format('  Today             : %dm %ds', today_min, today_sec))
+  push('')
+
+  -- Contribution grid (last 21 days, GitHub-style)
+  push('  Practice Activity (last 21 days)')
+  push('')
+  local grid_line = '  '
+  local label_line = '  '
+  local day_names = { 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' }
+  local grid_highlights = {} -- {col_start, col_end, hl_group} for the grid line
+
+  for d = 20, 0, -1 do
+    local t = os.time() - d * 86400
+    local date_str = os.date('%Y-%m-%d', t)
+    local dow = os.date('%w', t)  -- 0=Sun
+    local secs = daily[date_str] or 0
+
+    -- Intensity: □ = 0, ░ = <5min, ▒ = <15min, ▓ = <30min, █ = 30min+
+    local block, hl
+    if secs == 0 then
+      block = '□'
+      hl = 'NVTutorHint'
+    elseif secs < 300 then
+      block = '▪'
+      hl = 'NVTutorBronze'
+    elseif secs < 900 then
+      block = '▪'
+      hl = 'NVTutorSilver'
+    else
+      block = '▪'
+      hl = 'NVTutorGold'
+    end
+
+    local col_start = #grid_line
+    grid_line = grid_line .. block .. ' '
+    grid_highlights[#grid_highlights + 1] = { col_start, #grid_line - 1, hl }
+    label_line = label_line .. day_names[tonumber(dow) + 1] .. ''
+  end
+
+  push(grid_line)
+  push(label_line)
+  push('')
+  push('  □ = none  ▪ = bronze(<5m)  ▪ = silver(<15m)  ▪ = gold(15m+)')
   push('')
   push('  [q] Close')
 
@@ -788,6 +838,25 @@ function M.show_stats(progress_state)
       pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, 'NVTutorSilver', idx - 1, 0, -1)
     elseif line:match('Bronze mastery') then
       pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, 'NVTutorBronze', idx - 1, 0, -1)
+    end
+  end
+
+  -- Apply contribution grid highlights
+  -- Find the grid line index
+  for idx, line in ipairs(lines) do
+    if line == grid_line then
+      for _, hl_info in ipairs(grid_highlights) do
+        pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, hl_info[3], idx - 1, hl_info[1], hl_info[2])
+      end
+      break
+    end
+  end
+
+  -- Highlight the legend line
+  for idx, line in ipairs(lines) do
+    if line:match('none.*bronze.*silver.*gold') then
+      pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, 'NVTutorHint', idx - 1, 0, -1)
+      break
     end
   end
 

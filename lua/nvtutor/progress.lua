@@ -18,6 +18,7 @@ local function default_state()
     gauntlet_completed = false,
     gauntlet_stats = nil,
     review_state = nil,
+    daily_practice = {},  -- { ["2026-04-22"] = 120.5, ... } seconds per day
   }
 end
 
@@ -148,6 +149,11 @@ function M.mark_challenge_complete(command, keystrokes, time, tier)
   end
 
   state.total_time = (state.total_time or 0) + time
+
+  -- Track daily practice time
+  local today = os.date('%Y-%m-%d')
+  if not state.daily_practice then state.daily_practice = {} end
+  state.daily_practice[today] = (state.daily_practice[today] or 0) + time
 
   M.save(state)
 end
