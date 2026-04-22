@@ -113,25 +113,25 @@ local lesson1 = {
       optimal = 2,
       hint = 'gg is a two-key motion. Do not confuse it with G.',
     }),
-    -- 3. Ctrl-d scrolls down (cursor moves mid-screen)
+    -- 3. Ctrl-d to reach the end
     h.movement({
       command = '<C-d>',
-      instruction = 'Scroll down half a screen with Ctrl-d',
+      instruction = 'Reach the last line using Ctrl-d (press repeatedly).',
       lines = doc_lines,
       from = { 1, 0 },
-      to   = { 15, 0 },
+      to   = { 28, 0 },
       optimal = 1,
-      hint = 'Ctrl-d moves the cursor down by half the window height.',
+      hint = 'Ctrl-d scrolls half a page down. Keep pressing to reach the end.',
     }),
-    -- 4. Ctrl-u scrolls up
+    -- 4. Ctrl-u to get back to the top
     h.movement({
       command = '<C-u>',
-      instruction = 'Scroll up half a screen with Ctrl-u',
+      instruction = 'Get back to line 1 using Ctrl-u (press repeatedly).',
       lines = doc_lines,
       from = { 28, 0 },
-      to   = { 14, 0 },
+      to   = { 1, 0 },
       optimal = 1,
-      hint = 'Ctrl-u is the counterpart to Ctrl-d.',
+      hint = 'Ctrl-u scrolls half a page up. Keep pressing to reach line 1.',
     }),
     -- 5. Chain: G then gg
     h.movement({

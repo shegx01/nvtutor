@@ -451,7 +451,7 @@ M.lessons = {
       -- Challenge 1: paste last yank after a delete with "0p
       h.editing({
         command = '"0p',
-        instruction = 'Paste the yanked word after an unrelated delete with "0p',
+        instruction = 'Yank "Alice", delete line 2, then paste at end of line 2 with $"0p.',
         lines = {
           'greet("Alice")',
           'remove_this_line',
@@ -464,7 +464,7 @@ M.lessons = {
         },
         optimal = 10,
         time = 12.0,
-        hint = 'yiw on "Alice" (cursor on A), then j to line 2, dd to delete, $ to end, "0p to paste',
+        hint = 'yiw yanks "Alice". jdd deletes line 2. $ goes to end. "0p pastes the yank (not the delete).',
       }),
       -- Challenge 2: black-hole delete with "_d to avoid clobbering register
       h.editing({

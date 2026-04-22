@@ -32,17 +32,24 @@ local function wrap_lines(lines, max_width)
     else
       -- Wrap at word boundaries
       local remaining = line
-      while #remaining > max_width do
+      local safety = 200 -- prevent infinite loop
+      while #remaining > max_width and safety > 0 do
+        safety = safety - 1
         -- Find the last space within max_width
-        local cut = max_width
         local space = remaining:sub(1, max_width):find('%s[^%s]*$')
+        local cut
         if space and space > 1 then
           cut = space
+        else
+          -- No space to break at — hard-cut at max_width
+          cut = max_width
         end
         local chunk = remaining:sub(1, cut)
         wrapped[#wrapped + 1] = chunk
         if #chunk > actual_max then actual_max = #chunk end
-        remaining = '  ' .. remaining:sub(cut + 1):gsub('^%s+', '')
+        local rest = remaining:sub(cut + 1):gsub('^%s+', '')
+        if #rest == 0 then break end
+        remaining = rest  -- no prefix padding that would grow the string
       end
       if #remaining > 0 then
         wrapped[#wrapped + 1] = remaining
@@ -615,6 +622,58 @@ function M.show_feedback_message(message, on_dismiss)
 end
 
 -- ---------------------------------------------------------------------------
+-- 8c. show_chapter_complete
+-- ---------------------------------------------------------------------------
+
+---Show chapter completion with choices: next chapter, replay, or menu.
+---@param chapter_n integer
+---@param is_final boolean  true if this is the last chapter
+---@param on_choice fun(choice: string)  'next', 'replay', or 'menu'
+function M.show_chapter_complete(chapter_n, is_final, on_choice)
+  local lines = {
+    '',
+    string.format('  Chapter %d complete!', chapter_n),
+    '',
+  }
+
+  if is_final then
+    lines[#lines + 1] = '  [g] Start the Final Gauntlet'
+    lines[#lines + 1] = '  [r] Replay this chapter'
+  else
+    lines[#lines + 1] = string.format('  [n] Next chapter (%d)', chapter_n + 1)
+    lines[#lines + 1] = '  [r] Replay this chapter'
+    lines[#lines + 1] = '  [m] Back to menu'
+  end
+
+  lines[#lines + 1] = ''
+
+  local handle = M.show_floating(lines, { position = 'center', border = 'rounded' })
+  pcall(vim.api.nvim_buf_add_highlight, handle.buf, M._ns, 'NVTutorGold', 1, 0, -1)
+  vim.api.nvim_set_current_win(handle.win)
+
+  local chosen = false
+  local function choose(choice)
+    if chosen then return end
+    chosen = true
+    remove_float(handle)
+    if on_choice then vim.schedule(function() on_choice(choice) end) end
+  end
+
+  map(handle.buf, 'n', 'r', function() choose('replay') end, 'Replay chapter')
+
+  if is_final then
+    map(handle.buf, 'n', 'g', function() choose('next') end, 'Start gauntlet')
+    -- Auto-advance to gauntlet after 5s if no choice
+    vim.defer_fn(function() choose('next') end, 5000)
+  else
+    map(handle.buf, 'n', 'n', function() choose('next') end, 'Next chapter')
+    map(handle.buf, 'n', 'm', function() choose('menu') end, 'Back to menu')
+    -- Auto-advance to next chapter after 5s if no choice
+    vim.defer_fn(function() choose('next') end, 5000)
+  end
+end
+
+-- ---------------------------------------------------------------------------
 -- 9. show_stats
 -- ---------------------------------------------------------------------------
 
@@ -709,9 +768,58 @@ function M.show_stats(progress_state)
 
   -- Total time
   local total_seconds = progress_state.total_time or 0
-  local minutes = math.floor(total_seconds / 60)
-  local seconds = math.floor(total_seconds % 60)
-  push(string.format('  Total practice time: %dm %ds', minutes, seconds))
+  local total_min = math.floor(total_seconds / 60)
+  local total_sec = math.floor(total_seconds % 60)
+  push(string.format('  Total practice time: %dm %ds', total_min, total_sec))
+
+  -- Today's practice
+  local today = os.date('%Y-%m-%d')
+  local daily = progress_state.daily_practice or {}
+  local today_secs = daily[today] or 0
+  local today_min = math.floor(today_secs / 60)
+  local today_sec = math.floor(today_secs % 60)
+  push(string.format('  Today             : %dm %ds', today_min, today_sec))
+  push('')
+
+  -- Practice activity (last 7 days as horizontal bars)
+  push('  Recent Activity')
+  push('  ' .. string.rep('─', 42))
+  local day_names = { 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' }
+  local bar_data = {} -- store for highlighting after buffer creation
+
+  for d = 6, 0, -1 do
+    local t = os.time() - d * 86400
+    local date_str = os.date('%Y-%m-%d', t)
+    local dow = tonumber(os.date('%w', t))
+    local day_label = day_names[dow + 1]
+    local secs = daily[date_str] or 0
+    local mins = math.floor(secs / 60)
+
+    -- Bar: each █ = 2 minutes, max 20 chars (40 min)
+    local bar_len = math.min(math.floor(secs / 120), 20)
+    local bar = string.rep('█', bar_len)
+    local time_str = mins > 0 and string.format('%dm', mins) or ''
+
+    local hl
+    if secs == 0 then
+      hl = 'NVTutorHint'
+      bar = '·'
+      time_str = ''
+    elseif secs < 300 then
+      hl = 'NVTutorBronze'
+    elseif secs < 900 then
+      hl = 'NVTutorSilver'
+    else
+      hl = 'NVTutorGold'
+    end
+
+    local is_today = d == 0
+    local marker = is_today and ' ◀ today' or ''
+    local line = string.format('  %s  %s %s%s', day_label, bar, time_str, marker)
+    push(line)
+    bar_data[#lines] = hl
+  end
+
   push('')
   push('  [q] Close')
 
@@ -730,6 +838,11 @@ function M.show_stats(progress_state)
     elseif line:match('Bronze mastery') then
       pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, 'NVTutorBronze', idx - 1, 0, -1)
     end
+  end
+
+  -- Apply activity bar highlights
+  for line_num, hl in pairs(bar_data) do
+    pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, hl, line_num - 1, 0, -1)
   end
 
   map(buf, 'n', 'q', function()

@@ -1,5 +1,14 @@
 local M = {}
 
+--- Write to a debug log file (persists even if Neovim hangs)
+local function dbg(msg)
+  local f = io.open(vim.fn.stdpath('data') .. '/tutor/debug.log', 'a')
+  if f then
+    f:write(os.date('%H:%M:%S') .. ' ' .. msg .. '\n')
+    f:close()
+  end
+end
+
 --- Disable mini.nvim plugins on a practice buffer so users learn native Vim behavior.
 local function disable_mini_plugins(buf)
   vim.api.nvim_buf_set_var(buf, 'miniai_disable', true)
@@ -13,9 +22,18 @@ end
 --- Buffer-local maps take precedence over global maps.
 local function restore_native_keymaps(buf)
   local natives = {
-    'H', 'L', 'M',           -- screen motions (LazyVim remaps H/L to buffer switching)
-    'J',                      -- join lines (some configs remap to move line down)
-    's', 'S',                 -- substitute (LazyVim maps s to flash.nvim/leap)
+    -- Screen motions (LazyVim remaps H/L to buffer switching)
+    'H', 'L', 'M',
+    -- Join lines (some configs remap to move line down)
+    'J',
+    -- Substitute (LazyVim maps s to flash.nvim/leap)
+    's', 'S',
+    -- Scrolling (plugins may remap for smooth scroll)
+    '<C-f>', '<C-b>', '<C-d>', '<C-u>',
+    -- Jump list
+    '<C-o>', '<C-i>',
+    -- Increment/decrement
+    '<C-a>', '<C-x>',
   }
   for _, key in ipairs(natives) do
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
@@ -89,7 +107,10 @@ function M.launch()
     restore_native_keymaps(buf)
     M._state.buf = buf
     M._state.active = true
+    local old_ei = vim.o.eventignore
+    vim.o.eventignore = 'all'
     vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
+    vim.o.eventignore = old_ei
     M._state.win = vim.api.nvim_get_current_win()
     if state.review_state.type == 'gauntlet' then
       review.start_gauntlet(buf, function()
@@ -188,9 +209,12 @@ function M.start_lesson(chapter_n, lesson_n)
 
   M._state.buf = buf
 
-  -- Force display using nvim_win_set_buf on the current window.
+  -- Force display — suppress all events to prevent dashboard plugins from intercepting
   local win = vim.api.nvim_get_current_win()
+  local old_ei = vim.o.eventignore
+  vim.o.eventignore = 'all'
   vim.api.nvim_win_set_buf(win, buf)
+  vim.o.eventignore = old_ei
   M._state.win = win
 
   -- Clean window appearance for the tutor
@@ -217,42 +241,56 @@ function M.start_lesson(chapter_n, lesson_n)
 end
 
 function M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx)
-  local chapters = require('nvtutor.chapters')
-  local engine = require('nvtutor.engine')
-  local progress = require('nvtutor.progress')
-  local lesson = chapters.get_lesson(chapter_n, lesson_n)
-
-  if challenge_idx > #lesson.challenges then
-    M.complete_lesson(chapter_n, lesson_n)
-    return
-  end
-
-  M._state.challenge_idx = challenge_idx
-
-  -- Save position
-  local state = progress.load()
-  state.current_challenge = challenge_idx
-  progress.save(state)
-
-  local challenge_def = lesson.challenges[challenge_idx]
-  local total = #lesson.challenges
-
-  engine.start_challenge(M._state.buf, M._state.win, challenge_def, challenge_idx, total, function(result)
-    if result.skipped then
-      -- Move to next challenge
-      M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
-    else
-      -- Record mastery
-      progress.mark_challenge_complete(
-        challenge_def.command, result.keystrokes, result.time, result.tier
-      )
-      -- Brief pause then next challenge (longer when optimal solution is shown)
-      local delay = result.has_optimal and 2500 or 1500
-      vim.defer_fn(function()
-        M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
-      end, delay)
+  dbg(string.format('start_challenge_sequence Ch%d L%d C%d', chapter_n, lesson_n, challenge_idx))
+  local ok, err = pcall(function()
+    local chapters = require('nvtutor.chapters')
+    local engine = require('nvtutor.engine')
+    local progress = require('nvtutor.progress')
+    local lesson = chapters.get_lesson(chapter_n, lesson_n)
+    if not lesson or not lesson.challenges then
+      dbg('ERROR: lesson not found')
+      vim.notify(string.format('NVTutor: lesson Ch%d L%d not found', chapter_n, lesson_n), vim.log.levels.ERROR)
+      return
     end
-  end)
+
+    if challenge_idx > #lesson.challenges then
+      dbg('all challenges done, completing lesson')
+      M.complete_lesson(chapter_n, lesson_n)
+      return
+    end
+
+    M._state.challenge_idx = challenge_idx
+
+    -- Save position
+    local state = progress.load()
+    state.current_challenge = challenge_idx
+    progress.save(state)
+
+    local challenge_def = lesson.challenges[challenge_idx]
+    local total = #lesson.challenges
+    dbg(string.format('starting engine challenge %d/%d: %s', challenge_idx, total, challenge_def.command or '?'))
+
+    engine.start_challenge(M._state.buf, M._state.win, challenge_def, challenge_idx, total, function(result)
+      dbg(string.format('challenge %d completed: skipped=%s', challenge_idx, tostring(result.skipped)))
+      if result.skipped then
+        M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
+      else
+        progress.mark_challenge_complete(
+          challenge_def.command, result.keystrokes, result.time, result.tier
+        )
+        local delay = result.has_optimal and 2500 or 1500
+        dbg(string.format('scheduling next challenge in %dms', delay))
+        vim.defer_fn(function()
+          dbg('defer_fn fired, advancing to next challenge')
+          M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
+        end, delay)
+      end
+    end)
+  end) -- pcall
+  if not ok then
+    dbg('ERROR in start_challenge_sequence: ' .. tostring(err))
+    vim.notify('NVTutor error: ' .. tostring(err), vim.log.levels.ERROR)
+  end
 end
 
 function M.complete_lesson(chapter_n, lesson_n)
@@ -292,27 +330,33 @@ function M.complete_chapter(chapter_n)
   progress.mark_chapter_complete(chapter_n)
 
   if chapter_n >= require('nvtutor.chapters').get_chapter_count() then
-    -- Final chapter — auto-advance to gauntlet
-    ui.show_timed_message('All chapters complete! Starting the final gauntlet...', 2000, function()
-      local review = require('nvtutor.review')
-      review.start_gauntlet(M._state.buf, function()
-        local state = progress.load()
-        state.gauntlet_completed = true
-        progress.save(state)
-        M._state.active = false
-        M.show_stats()
-      end)
+    -- Final chapter — offer gauntlet or replay
+    ui.show_chapter_complete(chapter_n, true, function(choice)
+      if choice == 'replay' then
+        M.start_lesson(chapter_n, 1)
+      else
+        local review = require('nvtutor.review')
+        review.start_gauntlet(M._state.buf, function()
+          local state = progress.load()
+          state.gauntlet_completed = true
+          progress.save(state)
+          M._state.active = false
+          M.show_stats()
+        end)
+      end
     end)
   else
-    -- Auto-advance to next chapter
-    ui.show_timed_message(
-      string.format('Chapter %d complete! Chapter %d unlocked.', chapter_n, chapter_n + 1),
-      2500,
-      function()
+    -- Offer next chapter, replay, or menu
+    ui.show_chapter_complete(chapter_n, false, function(choice)
+      if choice == 'replay' then
+        M.start_lesson(chapter_n, 1)
+      elseif choice == 'menu' then
         M._state.active = false
         M.show_menu()
+      else -- 'next'
+        M.start_lesson(chapter_n + 1, 1)
       end
-    )
+    end)
   end
 end
 

@@ -271,8 +271,25 @@ function M.start_challenge(buf, win, challenge_def, challenge_num, total, on_don
   -- Set up buffer using the explicit window handle
   M.setup_buffer(buf, challenge_def, win)
 
-  -- Show challenge prompt
+  -- Show challenge prompt (store info for resize redraw)
+  M._state.prompt_info = { num = challenge_num, total = total, instruction = challenge_def.instruction }
   ui().show_challenge_prompt(challenge_num, total, challenge_def.instruction)
+
+  -- Re-create prompt on terminal resize or focus regain
+  local prompt_augroup = vim.api.nvim_create_augroup('NVTutorPrompt', { clear = true })
+  vim.api.nvim_create_autocmd({ 'VimResized', 'FocusGained' }, {
+    group = prompt_augroup,
+    callback = function()
+      if M._state.prompt_info then
+        ui().close_floats()
+        ui().show_challenge_prompt(
+          M._state.prompt_info.num,
+          M._state.prompt_info.total,
+          M._state.prompt_info.instruction
+        )
+      end
+    end,
+  })
 
   -- Start counting
   M._state.keystroke_count = 0
@@ -358,6 +375,8 @@ function M._finish_challenge(buf, skipped)
 
   -- Clean up autocmds
   pcall(vim.api.nvim_del_augroup_by_name, 'NVTutorChallenge')
+  pcall(vim.api.nvim_del_augroup_by_name, 'NVTutorPrompt')
+  M._state.prompt_info = nil
 
   -- Clean up keymaps
   pcall(vim.keymap.del, 'n', '<C-l>', { buffer = buf })
@@ -376,7 +395,8 @@ function M._finish_challenge(buf, skipped)
 
   if skipped then
     if M._state.completion_cb then
-      M._state.completion_cb({ skipped = true })
+      local cb = M._state.completion_cb
+      vim.schedule(function() cb({ skipped = true }) end)
     end
     return
   end
@@ -400,15 +420,19 @@ function M._finish_challenge(buf, skipped)
   -- Show feedback (with optional optimal solution text)
   ui().show_feedback(true, tier, keystrokes, challenge_def.optimal_keystrokes, elapsed, challenge_def.optimal_solution)
 
-  -- Callback (include whether optimal_solution was shown for timer adjustment)
+  -- Defer callback to a clean event loop tick so vim.defer_fn timers
+  -- inside the callback fire reliably (avoids stalling when called from
+  -- deep autocmd → vim.schedule → _finish_challenge chain).
   if M._state.completion_cb then
-    M._state.completion_cb({
+    local cb = M._state.completion_cb
+    local result = {
       skipped = false,
       keystrokes = keystrokes,
       time = elapsed,
       tier = tier,
       has_optimal = challenge_def.optimal_solution ~= nil,
-    })
+    }
+    vim.schedule(function() cb(result) end)
   end
 end
 
