@@ -467,7 +467,7 @@ M.lessons = {
         command = 'ggA',
         instruction = 'Go to line 1 and append "world" inside the quotes using ggA.',
         lines = {
-          'local greeting = "Hello, "',
+          'local greeting = "Hello, ',
           'local other = "unrelated"',
         },
         start = { 2, 0 },
@@ -488,7 +488,7 @@ M.lessons = {
           '-- scratch',
           'local y = ',
         },
-        start = { 3, 10 },
+        start = { 3, 9 },
         expected = {
           'local x = 10',
           'local y = 20',
@@ -547,11 +547,11 @@ M.lessons = {
         lines = {
           'The answer is: ',
         },
-        start = { 1, 15 },
+        start = { 1, 14 },
         expected = {
           'The answer is: 42',
         },
-        optimal = 10,
+        optimal = 8,
         time = 10.0,
         hint = 'Enter insert at end of line; Ctrl-r = opens the expression prompt; type 6*7 then Enter',
       }),

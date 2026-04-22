@@ -83,7 +83,7 @@ local lesson1 = {
       instruction = 'Move back to just after the ":" using T:',
       lines = find_lines,
       from = { 4, 50 },   -- period at end of "done."
-      to   = { 4, 43 },   -- one after ':' ("colon: done." — colon is at col 42)
+      to   = { 4, 45 },   -- one after ':' ("colon: done." — colon is at col 44)
       optimal = 2,         -- T:
       hint = 'T: stops one character AFTER the ":" when searching backward.',
     }),
@@ -93,7 +93,7 @@ local lesson1 = {
       instruction = 'Jump to the second semicolon using f; then ;',
       lines = find_lines,
       from = { 5, 0 },
-      to   = { 5, 35 },   -- second ';' in "then verify; the output."
+      to   = { 5, 36 },   -- second ';' in "then verify; the output." (col 23 and 36)
       optimal = 3,         -- f;;
       hint = 'Press f; to land on the first ";", then ; to advance to the second.',
     }),
@@ -185,7 +185,7 @@ local lesson2 = {
       command = 'dt',
       instruction = 'Delete the value "ok" up to the comma using dt,',
       lines = compose_lines,
-      start = { 5, 11 },   -- 'o' of '"ok"'
+      start = { 5, 19 },   -- 'o' of '"ok"' (col 19 in 'return { status = "ok", ...}')
       expected = {
         'local result = calculate(width, height, depth)',
         'print("error: " .. tostring(err))',

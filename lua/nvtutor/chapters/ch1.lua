@@ -104,10 +104,10 @@ M.lessons = {
           'Pack my box with five dozen liquor jugs.',
         },
         from = { 1, 10 },
-        to   = { 1, 4 },
+        to   = { 1, 5 },
         optimal = 2,
         time = 5.0,
-        hint = '6h moves six characters left',
+        hint = '5h moves five characters left',
       }),
       -- Challenge 3: precise column targeting
       h.movement({
