@@ -126,8 +126,8 @@ function M.setup_buffer(buf, challenge_def, win)
     elseif challenge_def.target.start_line then
       -- Region target (visual/editing)
       for ln = challenge_def.target.start_line, challenge_def.target.end_line do
-        local sc = ln == challenge_def.target.start_line and (challenge_def.target.start_col - 1) or 0
-        local ec = ln == challenge_def.target.end_line and challenge_def.target.end_col or -1
+        local sc = ln == challenge_def.target.start_line and challenge_def.target.start_col or 0
+        local ec = ln == challenge_def.target.end_line and (challenge_def.target.end_col + 1) or -1
         if ec == -1 then
           ec = #(challenge_def.buffer_lines[ln] or '')
         end

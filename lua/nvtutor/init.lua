@@ -1,5 +1,14 @@
 local M = {}
 
+--- Disable mini.nvim plugins on a practice buffer so users learn native Vim behavior.
+local function disable_mini_plugins(buf)
+  vim.api.nvim_buf_set_var(buf, 'miniai_disable', true)
+  vim.api.nvim_buf_set_var(buf, 'minisurround_disable', true)
+  vim.api.nvim_buf_set_var(buf, 'minicomment_disable', true)
+  vim.api.nvim_buf_set_var(buf, 'minipairs_disable', true)
+  vim.api.nvim_buf_set_var(buf, 'miniindentscope_disable', true)
+end
+
 M._state = {
   active = false,
   chapter = nil,
@@ -63,6 +72,7 @@ function M.launch()
     vim.api.nvim_set_option_value('buftype', 'nofile', { buf = buf })
     vim.api.nvim_set_option_value('buflisted', false, { buf = buf })
     vim.api.nvim_set_option_value('swapfile', false, { buf = buf })
+    disable_mini_plugins(buf)
     M._state.buf = buf
     M._state.active = true
     vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
@@ -159,13 +169,7 @@ function M.start_lesson(chapter_n, lesson_n)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, initial_lines)
   vim.api.nvim_set_option_value('modifiable', false, { buf = buf })
 
-  -- Disable plugins that override Vim's native behavior in the practice buffer.
-  -- Users need to learn real Vim commands, not plugin-modified versions.
-  vim.api.nvim_buf_set_var(buf, 'miniai_disable', true)       -- mini.ai text objects
-  vim.api.nvim_buf_set_var(buf, 'minisurround_disable', true) -- mini.surround
-  vim.api.nvim_buf_set_var(buf, 'minicomment_disable', true)  -- mini.comment
-  vim.api.nvim_buf_set_var(buf, 'minipairs_disable', true)    -- mini.pairs (auto brackets)
-  vim.api.nvim_buf_set_var(buf, 'miniindentscope_disable', true)
+  disable_mini_plugins(buf)
 
   M._state.buf = buf
 
@@ -279,6 +283,7 @@ function M.complete_chapter(chapter_n)
         local state = progress.load()
         state.gauntlet_completed = true
         progress.save(state)
+        M._state.active = false
         M.show_stats()
       end)
     end)

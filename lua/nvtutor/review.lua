@@ -190,9 +190,10 @@ function M._run_challenge_sequence(buf, challenges, start_idx, review_type, chap
           challenge.command, result.keystrokes, result.time, result.tier
         )
       end
+      local delay = result.has_optimal and 2500 or 1500
       vim.defer_fn(function()
         run_next(idx + 1)
-      end, 1500)
+      end, delay)
     end)
   end
 
