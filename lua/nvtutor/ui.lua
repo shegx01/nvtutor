@@ -781,46 +781,45 @@ function M.show_stats(progress_state)
   push(string.format('  Today             : %dm %ds', today_min, today_sec))
   push('')
 
-  -- Contribution grid (last 21 days, GitHub-style)
-  push('  Practice Activity (last 21 days)')
-  push('')
-  local grid_line = '  '
-  local label_line = '  '
-  local day_names = { 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa' }
-  local grid_highlights = {} -- {col_start, col_end, hl_group} for the grid line
+  -- Practice activity (last 7 days as horizontal bars)
+  push('  Recent Activity')
+  push('  ' .. string.rep('─', 42))
+  local day_names = { 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' }
+  local bar_data = {} -- store for highlighting after buffer creation
 
-  for d = 20, 0, -1 do
+  for d = 6, 0, -1 do
     local t = os.time() - d * 86400
     local date_str = os.date('%Y-%m-%d', t)
-    local dow = os.date('%w', t)  -- 0=Sun
+    local dow = tonumber(os.date('%w', t))
+    local day_label = day_names[dow + 1]
     local secs = daily[date_str] or 0
+    local mins = math.floor(secs / 60)
 
-    -- Intensity: □ = 0, ░ = <5min, ▒ = <15min, ▓ = <30min, █ = 30min+
-    local block, hl
+    -- Bar: each █ = 2 minutes, max 20 chars (40 min)
+    local bar_len = math.min(math.floor(secs / 120), 20)
+    local bar = string.rep('█', bar_len)
+    local time_str = mins > 0 and string.format('%dm', mins) or ''
+
+    local hl
     if secs == 0 then
-      block = '□'
       hl = 'NVTutorHint'
+      bar = '·'
+      time_str = ''
     elseif secs < 300 then
-      block = '▪'
       hl = 'NVTutorBronze'
     elseif secs < 900 then
-      block = '▪'
       hl = 'NVTutorSilver'
     else
-      block = '▪'
       hl = 'NVTutorGold'
     end
 
-    local col_start = #grid_line
-    grid_line = grid_line .. block .. ' '
-    grid_highlights[#grid_highlights + 1] = { col_start, #grid_line - 1, hl }
-    label_line = label_line .. day_names[tonumber(dow) + 1] .. ''
+    local is_today = d == 0
+    local marker = is_today and ' ◀ today' or ''
+    local line = string.format('  %s  %s %s%s', day_label, bar, time_str, marker)
+    push(line)
+    bar_data[#lines] = hl
   end
 
-  push(grid_line)
-  push(label_line)
-  push('')
-  push('  □ = none  ▪ = bronze(<5m)  ▪ = silver(<15m)  ▪ = gold(15m+)')
   push('')
   push('  [q] Close')
 
@@ -841,23 +840,9 @@ function M.show_stats(progress_state)
     end
   end
 
-  -- Apply contribution grid highlights
-  -- Find the grid line index
-  for idx, line in ipairs(lines) do
-    if line == grid_line then
-      for _, hl_info in ipairs(grid_highlights) do
-        pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, hl_info[3], idx - 1, hl_info[1], hl_info[2])
-      end
-      break
-    end
-  end
-
-  -- Highlight the legend line
-  for idx, line in ipairs(lines) do
-    if line:match('none.*bronze.*silver.*gold') then
-      pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, 'NVTutorHint', idx - 1, 0, -1)
-      break
-    end
+  -- Apply activity bar highlights
+  for line_num, hl in pairs(bar_data) do
+    pcall(vim.api.nvim_buf_add_highlight, buf, M._ns, hl, line_num - 1, 0, -1)
   end
 
   map(buf, 'n', 'q', function()
