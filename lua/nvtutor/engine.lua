@@ -105,12 +105,7 @@ function M.setup_buffer(buf, challenge_def, win)
 
   -- Configure the practice window for clear cursor visibility
   local target_win = (win and vim.api.nvim_win_is_valid(win)) and win or 0
-  vim.api.nvim_set_option_value('cursorline', true, { win = target_win })
-  vim.api.nvim_set_option_value('number', true, { win = target_win })
-  vim.api.nvim_set_option_value('relativenumber', true, { win = target_win })
-  vim.api.nvim_set_option_value('signcolumn', 'no', { win = target_win })
-  -- Scroll offset keeps the cursor away from the very top/bottom edge
-  vim.api.nvim_set_option_value('scrolloff', 3, { win = target_win })
+  ui().configure_practice_window(target_win)
 
   -- Position cursor
   local line = challenge_def.start_pos[1]
@@ -274,7 +269,7 @@ function M.start_challenge(buf, win, challenge_def, challenge_num, total, on_don
 
   -- Start counting
   M._state.keystroke_count = 0
-  M._state.start_time = vim.loop.hrtime()
+  M._state.start_time = vim.uv.hrtime()
   M.start_counting(challenge_def)
 
   -- Set up retry/skip keybindings
@@ -282,7 +277,7 @@ function M.start_challenge(buf, win, challenge_def, challenge_num, total, on_don
     M.stop_counting()
     M.reset_buffer(buf, challenge_def, win)
     M._state.keystroke_count = 0
-    M._state.start_time = vim.loop.hrtime()
+    M._state.start_time = vim.uv.hrtime()
     M.start_counting(challenge_def)
   end, { buffer = buf, nowait = true, desc = 'NVTutor: Retry challenge' })
 
@@ -368,7 +363,7 @@ function M._finish_challenge(buf, skipped)
   -- Close challenge prompt (preserve practice buffer)
   ui().close_floats()
 
-  local elapsed = (vim.loop.hrtime() - M._state.start_time) / 1e9
+  local elapsed = (vim.uv.hrtime() - M._state.start_time) / 1e9
   local keystrokes = M._state.keystroke_count
   local challenge_def = M._state.active_challenge
 

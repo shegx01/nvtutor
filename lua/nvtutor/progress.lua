@@ -31,18 +31,18 @@ end
 function M.load()
   ensure_dir()
 
-  local fd = vim.loop.fs_open(DATA_PATH, 'r', FILE_MODE)
+  local fd = vim.uv.fs_open(DATA_PATH, 'r', FILE_MODE)
   if not fd then
     return default_state()
   end
 
-  local stat = vim.loop.fs_fstat(fd)
+  local stat = vim.uv.fs_fstat(fd)
   if not stat then
-    vim.loop.fs_close(fd)
+    vim.uv.fs_close(fd)
     return default_state()
   end
-  local data = vim.loop.fs_read(fd, stat.size, 0)
-  vim.loop.fs_close(fd)
+  local data = vim.uv.fs_read(fd, stat.size, 0)
+  vim.uv.fs_close(fd)
 
   if not data or data == '' then
     return default_state()
@@ -73,23 +73,23 @@ function M.save(state)
 
   local tmp_path = DATA_PATH .. '.tmp'
 
-  local fd = vim.loop.fs_open(tmp_path, 'w', FILE_MODE)
+  local fd = vim.uv.fs_open(tmp_path, 'w', FILE_MODE)
   if not fd then
     vim.notify('NVTutor: failed to open tmp file for writing', vim.log.levels.ERROR)
     return
   end
 
-  vim.loop.fs_write(fd, encoded, 0)
-  vim.loop.fs_close(fd)
+  vim.uv.fs_write(fd, encoded, 0)
+  vim.uv.fs_close(fd)
 
-  local rename_ok, rename_err = vim.loop.fs_rename(tmp_path, DATA_PATH)
+  local rename_ok, rename_err = vim.uv.fs_rename(tmp_path, DATA_PATH)
   if not rename_ok then
     vim.notify('NVTutor: failed to save progress: ' .. tostring(rename_err), vim.log.levels.ERROR)
   end
 end
 
 function M.reset()
-  local ok, err = vim.loop.fs_unlink(DATA_PATH)
+  local ok, err = vim.uv.fs_unlink(DATA_PATH)
   if not ok and err and not err:match('ENOENT') then
     vim.notify('NVTutor: failed to delete progress file: ' .. tostring(err), vim.log.levels.WARN)
   end
@@ -97,31 +97,10 @@ function M.reset()
 end
 
 function M.is_new_user()
-  local fd = vim.loop.fs_open(DATA_PATH, 'r', FILE_MODE)
-  if not fd then
-    return true
-  end
-
-  local stat = vim.loop.fs_fstat(fd)
-  if not stat then
-    vim.loop.fs_close(fd)
-    return true
-  end
-  local data = vim.loop.fs_read(fd, stat.size, 0)
-  vim.loop.fs_close(fd)
-
-  if not data or data == '' then
-    return true
-  end
-
-  local ok, decoded = pcall(vim.json.decode, data)
-  if not ok or type(decoded) ~= 'table' then
-    return true
-  end
-
-  return (decoded.current_chapter or 1) == 1
-    and (decoded.current_lesson or 1) == 1
-    and (decoded.current_challenge or 1) == 1
+  local state = M.load()
+  return (state.current_chapter or 1) == 1
+    and (state.current_lesson or 1) == 1
+    and (state.current_challenge or 1) == 1
 end
 
 function M.get_mastery_tier(keystrokes, optimal_keystrokes, time, optimal_time)
@@ -134,7 +113,7 @@ function M.get_mastery_tier(keystrokes, optimal_keystrokes, time, optimal_time)
   end
 end
 
-function M.mark_challenge_complete(chapter, lesson, challenge_idx, command, keystrokes, time, tier)
+function M.mark_challenge_complete(command, keystrokes, time, tier)
   local state = M.load()
 
   -- Only upgrade mastery tier, never downgrade

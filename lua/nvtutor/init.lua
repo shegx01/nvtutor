@@ -63,6 +63,7 @@ function M.launch()
     M._state.buf = buf
     M._state.active = true
     vim.cmd('noautocmd buffer ' .. buf)
+    M._state.win = vim.api.nvim_get_current_win()
     if state.review_state.type == 'gauntlet' then
       review.start_gauntlet(buf, function()
         local ps = progress.load()
@@ -166,12 +167,7 @@ function M.start_lesson(chapter_n, lesson_n)
   M._state.win = win
 
   -- Clean window appearance for the tutor
-  vim.api.nvim_set_option_value('number', true, { win = win })
-  vim.api.nvim_set_option_value('relativenumber', true, { win = win })
-  vim.api.nvim_set_option_value('cursorline', true, { win = win })
-  vim.api.nvim_set_option_value('signcolumn', 'no', { win = win })
-  vim.api.nvim_set_option_value('scrolloff', 3, { win = win })
-  vim.api.nvim_set_option_value('wrap', true, { win = win })
+  ui.configure_practice_window(win)
 
   -- Set up quit handler
   local augroup = vim.api.nvim_create_augroup('NVTutorSession', { clear = true })
@@ -221,7 +217,6 @@ function M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx)
     else
       -- Record mastery
       progress.mark_challenge_complete(
-        chapter_n, lesson_n, challenge_idx,
         challenge_def.command, result.keystrokes, result.time, result.tier
       )
       -- Brief pause then next challenge (longer when optimal solution is shown)

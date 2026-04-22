@@ -12,7 +12,7 @@ M.chapters = {
   { id = 9, title = 'Vim Tricks',               file = 'ch9' },
 }
 
----@param n number chapter number (1-8)
+---@param n number chapter number (1-9)
 ---@return table chapter module
 function M.get_chapter(n)
   return require('nvtutor.chapters.ch' .. n)

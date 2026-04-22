@@ -1,5 +1,8 @@
 local M = {}
 
+-- Seed random once for non-deterministic review shuffles (LuaJIT needs this)
+math.randomseed(os.time())
+
 ---Select review challenges weighted by mastery
 ---@param chapters_range number[] list of chapter numbers to draw from
 ---@param count number how many challenges to select
@@ -112,7 +115,9 @@ function M.start_gauntlet(buf, on_done)
     start_idx = state.review_state.current_idx
   else
     -- Generate gauntlet challenges — at least one per chapter
-    local all_range = { 1, 2, 3, 4, 5, 6, 7, 8 }
+    local ch_count = require('nvtutor.chapters').get_chapter_count()
+    local all_range = {}
+    for i = 1, ch_count do all_range[i] = i end
     challenges = M.select_review_challenges(all_range, 12, state)
 
     if #challenges == 0 then
@@ -182,7 +187,6 @@ function M._run_challenge_sequence(buf, challenges, start_idx, review_type, chap
     engine.start_challenge(buf, practice_win, challenge, idx, total, function(result)
       if not result.skipped then
         progress.mark_challenge_complete(
-          nil, nil, idx,
           challenge.command, result.keystrokes, result.time, result.tier
         )
       end

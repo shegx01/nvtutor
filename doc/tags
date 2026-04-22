@@ -6,11 +6,13 @@ NVTutorHint	nvtutor.txt	/*NVTutorHint*
 NVTutorSilver	nvtutor.txt	/*NVTutorSilver*
 NVTutorSuccess	nvtutor.txt	/*NVTutorSuccess*
 NVTutorTarget	nvtutor.txt	/*NVTutorTarget*
+nvtutor-advanced	nvtutor.txt	/*nvtutor-advanced*
 nvtutor-chapters	nvtutor.txt	/*nvtutor-chapters*
 nvtutor-commands	nvtutor.txt	/*nvtutor-commands*
 nvtutor-contents	nvtutor.txt	/*nvtutor-contents*
 nvtutor-highlights	nvtutor.txt	/*nvtutor-highlights*
 nvtutor-introduction	nvtutor.txt	/*nvtutor-introduction*
+nvtutor-keybindings	nvtutor.txt	/*nvtutor-keybindings*
 nvtutor-progress	nvtutor.txt	/*nvtutor-progress*
 nvtutor-requirements	nvtutor.txt	/*nvtutor-requirements*
 nvtutor-scoring	nvtutor.txt	/*nvtutor-scoring*

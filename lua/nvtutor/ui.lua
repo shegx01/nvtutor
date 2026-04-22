@@ -654,8 +654,7 @@ function M.show_stats(progress_state)
       end
     end
   end
-  local ch_count = 8
-  pcall(function() ch_count = require('nvtutor.chapters').get_chapter_count() end)
+  local ch_count = require('nvtutor.chapters').get_chapter_count()
   push(string.format('  Chapters completed : %d / %d', chapters_done, ch_count))
 
   push(string.format('  Commands tracked   : %d', total_cmds))
@@ -695,7 +694,24 @@ function M.show_stats(progress_state)
 end
 
 -- ---------------------------------------------------------------------------
--- 10. teardown
+-- 10. configure_practice_window
+-- ---------------------------------------------------------------------------
+
+local SCROLLOFF = 3
+
+---Configure the practice window for optimal challenge display.
+---@param win integer window handle
+function M.configure_practice_window(win)
+  vim.api.nvim_set_option_value('cursorline', true, { win = win })
+  vim.api.nvim_set_option_value('number', true, { win = win })
+  vim.api.nvim_set_option_value('relativenumber', true, { win = win })
+  vim.api.nvim_set_option_value('signcolumn', 'no', { win = win })
+  vim.api.nvim_set_option_value('scrolloff', SCROLLOFF, { win = win })
+  vim.api.nvim_set_option_value('wrap', true, { win = win })
+end
+
+-- ---------------------------------------------------------------------------
+-- 11. teardown
 -- ---------------------------------------------------------------------------
 
 ---Close all tracked floating windows only (preserves scratch buffers).
