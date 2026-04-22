@@ -9,6 +9,19 @@ local function disable_mini_plugins(buf)
   vim.api.nvim_buf_set_var(buf, 'miniindentscope_disable', true)
 end
 
+--- Restore native Vim keymaps that distributions (LazyVim, etc.) override globally.
+--- Buffer-local maps take precedence over global maps.
+local function restore_native_keymaps(buf)
+  local natives = {
+    'H', 'L', 'M',           -- screen motions (LazyVim remaps H/L to buffer switching)
+    'J',                      -- join lines (some configs remap to move line down)
+    's', 'S',                 -- substitute (LazyVim maps s to flash.nvim/leap)
+  }
+  for _, key in ipairs(natives) do
+    vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
+  end
+end
+
 M._state = {
   active = false,
   chapter = nil,
@@ -73,6 +86,7 @@ function M.launch()
     vim.api.nvim_set_option_value('buflisted', false, { buf = buf })
     vim.api.nvim_set_option_value('swapfile', false, { buf = buf })
     disable_mini_plugins(buf)
+    restore_native_keymaps(buf)
     M._state.buf = buf
     M._state.active = true
     vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
@@ -170,6 +184,7 @@ function M.start_lesson(chapter_n, lesson_n)
   vim.api.nvim_set_option_value('modifiable', false, { buf = buf })
 
   disable_mini_plugins(buf)
+  restore_native_keymaps(buf)
 
   M._state.buf = buf
 
