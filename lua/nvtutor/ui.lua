@@ -32,17 +32,24 @@ local function wrap_lines(lines, max_width)
     else
       -- Wrap at word boundaries
       local remaining = line
-      while #remaining > max_width do
+      local safety = 200 -- prevent infinite loop
+      while #remaining > max_width and safety > 0 do
+        safety = safety - 1
         -- Find the last space within max_width
-        local cut = max_width
         local space = remaining:sub(1, max_width):find('%s[^%s]*$')
+        local cut
         if space and space > 1 then
           cut = space
+        else
+          -- No space to break at — hard-cut at max_width
+          cut = max_width
         end
         local chunk = remaining:sub(1, cut)
         wrapped[#wrapped + 1] = chunk
         if #chunk > actual_max then actual_max = #chunk end
-        remaining = '  ' .. remaining:sub(cut + 1):gsub('^%s+', '')
+        local rest = remaining:sub(cut + 1):gsub('^%s+', '')
+        if #rest == 0 then break end
+        remaining = rest  -- no prefix padding that would grow the string
       end
       if #remaining > 0 then
         wrapped[#wrapped + 1] = remaining
