@@ -273,8 +273,8 @@ M.lessons = {
       }),
       -- Challenge 3: combine w and e for precision
       h.movement({
-        command = 'we',
-        instruction = 'Land on the "n" at the end of "brown" (try 3e).',
+        command = 'e',
+        instruction = 'Jump to the end of "brown" using e (press e three times or use 3e).',
         lines = {
           'The quick brown fox.',
         },
@@ -282,7 +282,7 @@ M.lessons = {
         to   = { 1, 14 },
         optimal = 2,
         time = 6.0,
-        hint = '3e = count(3) + motion(e). Jumps to the end of the 3rd word in 2 keystrokes.',
+        hint = 'e once → end of "The". e again → end of "quick". e again → end of "brown". Or 3e in 2 keys.',
       }),
       -- Challenge 4: full word navigation across a longer line
       h.movement({
