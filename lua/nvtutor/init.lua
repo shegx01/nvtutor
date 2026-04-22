@@ -89,7 +89,7 @@ function M.launch()
     restore_native_keymaps(buf)
     M._state.buf = buf
     M._state.active = true
-    vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
+    vim.cmd('noautocmd buffer ' .. buf)
     M._state.win = vim.api.nvim_get_current_win()
     if state.review_state.type == 'gauntlet' then
       review.start_gauntlet(buf, function()
@@ -188,9 +188,9 @@ function M.start_lesson(chapter_n, lesson_n)
 
   M._state.buf = buf
 
-  -- Force display using nvim_win_set_buf on the current window.
+  -- Force display — use noautocmd to prevent dashboard plugins from intercepting
   local win = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_buf(win, buf)
+  vim.cmd('noautocmd buffer ' .. buf)
   M._state.win = win
 
   -- Clean window appearance for the tutor
@@ -221,6 +221,10 @@ function M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx)
   local engine = require('nvtutor.engine')
   local progress = require('nvtutor.progress')
   local lesson = chapters.get_lesson(chapter_n, lesson_n)
+  if not lesson or not lesson.challenges then
+    vim.notify(string.format('NVTutor: lesson Ch%d L%d not found', chapter_n, lesson_n), vim.log.levels.ERROR)
+    return
+  end
 
   if challenge_idx > #lesson.challenges then
     M.complete_lesson(chapter_n, lesson_n)
