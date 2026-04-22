@@ -79,7 +79,12 @@ function M.save(state)
     return
   end
 
-  vim.uv.fs_write(fd, encoded, 0)
+  local bytes, write_err = vim.uv.fs_write(fd, encoded, 0)
+  if not bytes then
+    vim.uv.fs_close(fd)
+    vim.notify('NVTutor: failed to write progress: ' .. tostring(write_err), vim.log.levels.ERROR)
+    return
+  end
   vim.uv.fs_close(fd)
 
   local rename_ok, rename_err = vim.uv.fs_rename(tmp_path, DATA_PATH)

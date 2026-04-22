@@ -58,11 +58,14 @@ function M.launch()
   -- Resume review/gauntlet if active
   if state.review_state and state.review_state.active then
     local review = require('nvtutor.review')
-    local ui_mod = require('nvtutor.ui')
-    local buf = ui_mod.create_scratch_buffer({})
+    -- Create buffer directly (not via create_scratch_buffer which sets bufhidden=wipe)
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_set_option_value('buftype', 'nofile', { buf = buf })
+    vim.api.nvim_set_option_value('buflisted', false, { buf = buf })
+    vim.api.nvim_set_option_value('swapfile', false, { buf = buf })
     M._state.buf = buf
     M._state.active = true
-    vim.cmd('noautocmd buffer ' .. buf)
+    vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
     M._state.win = vim.api.nvim_get_current_win()
     if state.review_state.type == 'gauntlet' then
       review.start_gauntlet(buf, function()
@@ -141,6 +144,11 @@ function M.start_lesson(chapter_n, lesson_n)
   -- sees real text immediately — not a blank screen.
   local first_challenge = lesson.challenges and lesson.challenges[1]
   local initial_lines = first_challenge and first_challenge.buffer_lines or { '' }
+
+  -- Clean up old practice buffer if it exists (prevents buffer leaks across lessons)
+  if M._state.buf and vim.api.nvim_buf_is_valid(M._state.buf) then
+    pcall(vim.api.nvim_buf_delete, M._state.buf, { force = true })
+  end
 
   -- Create the buffer with content already in it
   local buf = vim.api.nvim_create_buf(false, true)
@@ -235,7 +243,11 @@ function M.complete_lesson(chapter_n, lesson_n)
 
   progress.mark_lesson_complete(chapter_n, lesson_n)
 
-  local chapter = chapters.get_chapter(chapter_n)
+  local ok, chapter = pcall(chapters.get_chapter, chapter_n)
+  if not ok or not chapter or not chapter.lessons then
+    vim.notify(string.format('NVTutor: failed to load chapter %d', chapter_n), vim.log.levels.ERROR)
+    return
+  end
   local lesson_count = #chapter.lessons
 
   if lesson_n >= lesson_count then
