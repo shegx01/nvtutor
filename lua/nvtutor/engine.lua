@@ -268,9 +268,6 @@ function M.start_challenge(buf, win, challenge_def, challenge_num, total, on_don
   M._state.active_challenge = challenge_def
   M._state.completion_cb = on_done
 
-  -- Clean up any lingering floats from previous challenge feedback
-  ui().close_floats()
-
   -- Set up buffer using the explicit window handle
   M.setup_buffer(buf, challenge_def, win)
 
