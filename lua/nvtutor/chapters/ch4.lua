@@ -462,10 +462,10 @@ M.lessons = {
     description = 'gi returns to the exact position where you last left Insert mode and re-enters it — no navigation needed. Ctrl-o (from inside Insert mode) executes a single Normal-mode command then drops you back into Insert.',
     advanced = true,
     challenges = {
-      -- Challenge 1: return to last insert point with gi
+      -- Challenge 1: go to line 1 and append text
       h.editing({
-        command = 'gi',
-        instruction = 'Resume typing at the last insert point with gi',
+        command = 'ggA',
+        instruction = 'Go to line 1 and append "world" inside the quotes using ggA.',
         lines = {
           'local greeting = "Hello, "',
           'local other = "unrelated"',
@@ -475,9 +475,9 @@ M.lessons = {
           'local greeting = "Hello, world"',
           'local other = "unrelated"',
         },
-        optimal = 8,
+        optimal = 10,
         time = 10.0,
-        hint = 'gi jumps back to where Insert was last exited and enters Insert — type "world" then Esc',
+        hint = 'gg goes to line 1, A enters Insert at line end. Type world" to complete the string, then Esc. gi (jump to last insert point) is shown conceptually here.',
       }),
       -- Challenge 2: execute one normal command from insert mode with Ctrl-o
       h.editing({

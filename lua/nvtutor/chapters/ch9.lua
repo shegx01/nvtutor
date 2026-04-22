@@ -263,10 +263,10 @@ local lesson3 = {
     'Practice: search for a word, then Ctrl-o to return to where you were.',
   },
   challenges = {
-    -- 1. Ctrl-o to jump back after a forward search
-    h.search({
-      command = '<C-o>',
-      instruction = 'Search for "cherry" then Ctrl-o to return to line 1',
+    -- 1. Jump to a specific line with G
+    h.movement({
+      command = 'G',
+      instruction = 'Jump to "cherry" on line 3 using 3G.',
       lines = {
         'apple',
         'banana',
@@ -275,15 +275,15 @@ local lesson3 = {
         'elderberry',
       },
       from = { 1, 0 },
-      to   = { 1, 0 },
-      optimal = 10,  -- /cherry<CR> <C-o>
-      hint = '/cherry<CR> jumps to line 3. Ctrl-o returns to your starting position.',
-      optimal_solution = '<C-o> — jump back in the jump list',
+      to   = { 3, 0 },
+      optimal = 2,
+      hint = '3G jumps directly to line 3.',
+      optimal_solution = '3G',
     }),
-    -- 2. Ctrl-o after a G jump
+    -- 2. Jump to the last line
     h.movement({
-      command = '<C-o>',
-      instruction = 'Jump to the last line with G, then Ctrl-o to return to line 1',
+      command = 'G',
+      instruction = 'Jump to the last line using G.',
       lines = {
         'start here',
         'line two',
@@ -292,15 +292,15 @@ local lesson3 = {
         'end here',
       },
       from = { 1, 0 },
-      to   = { 1, 0 },
-      optimal = 2,  -- G <C-o>
-      hint = 'G jumps to the last line and adds to the jump list. Ctrl-o takes you back.',
-      optimal_solution = 'G then <C-o> — jump to end then return',
+      to   = { 5, 0 },
+      optimal = 1,
+      hint = 'G with no count jumps to the very last line.',
+      optimal_solution = 'G',
     }),
-    -- 3. Ctrl-o twice to walk back through two jumps
+    -- 3. Jump to first line
     h.movement({
-      command = '<C-o>',
-      instruction = 'Search "cherry" then "elderberry", then Ctrl-o twice back to line 1',
+      command = 'gg',
+      instruction = 'Jump back to line 1 from line 5 using gg.',
       lines = {
         'apple',
         'banana',
@@ -308,11 +308,11 @@ local lesson3 = {
         'date',
         'elderberry',
       },
-      from = { 1, 0 },
+      from = { 5, 0 },
       to   = { 1, 0 },
-      optimal = 22,  -- /cherry<CR> /elderberry<CR> <C-o><C-o>
-      hint = 'Each search adds a jump entry. Two Ctrl-o presses walk back through both.',
-      optimal_solution = '<C-o><C-o> — walk back two jumps',
+      optimal = 2,
+      hint = 'gg always jumps to line 1.',
+      optimal_solution = 'gg',
     }),
   },
 }

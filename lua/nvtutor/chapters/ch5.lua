@@ -309,32 +309,32 @@ local lesson4 = {
     -- 1. ; advances to next match
     h.movement({
       command = ';',
-      instruction = 'Use fa then ; to reach the second "a" in "activate"',
+      instruction = 'Reach the second "a" on the line using fa then ;',
       lines = repeat_find_lines,
       from = { 1, 0 },
-      to   = { 1, 16 },   -- second 'a': 'activate' at col 13, 'a' inside at col 14; 'a' of 'args' col 24 -- target 'a' of 'activate' char 2 (col 14)
+      to   = { 1, 6 },    -- 'a' in "alpha" (second 'a' on line)
       optimal = 3,          -- f a ;
-      hint = 'fa finds the first "a". ; repeats the find to advance to the next "a".',
+      hint = 'fa finds the first "a" at col 3. ; repeats to the next "a" at col 6.',
       optimal_solution = 'fa;',
     }),
     -- 2. , reverses back
     h.movement({
       command = ',',
-      instruction = 'Use fa then ; to jump forward, then , to step back',
+      instruction = 'Go to the third "a", then step back to the second using ,',
       lines = repeat_find_lines,
       from = { 1, 0 },
-      to   = { 1, 13 },   -- first 'a' in 'activate' (col 13)
-      optimal = 4,          -- f a ; ,
-      hint = 'fa then ; moves you past the target. , reverses the find back one step.',
-      optimal_solution = 'fa;,',
+      to   = { 1, 6 },    -- back to second 'a' after fa;;,
+      optimal = 5,          -- f a ; ; ,
+      hint = 'fa;; reaches the third "a". Then , reverses one step back.',
+      optimal_solution = 'fa;;,',
     }),
     -- 3. Chain ; across a line
     h.movement({
       command = ';',
-      instruction = 'Use fa then ;; to reach the third "a" on the line',
+      instruction = 'Reach the third "a" on line 2 using fa then ;;',
       lines = repeat_find_lines,
       from = { 2, 0 },
-      to   = { 2, 22 },   -- third 'a': 'call abort() after any...' — 'a' of 'any' at col 22
+      to   = { 2, 13 },   -- 'call abort() after any...' — a(1),a(5),a(13)='a' of "after"
       optimal = 4,          -- f a ; ;
       hint = 'Each ; repeats the same find one step forward along the line.',
       optimal_solution = 'fa;;',

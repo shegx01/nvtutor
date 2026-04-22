@@ -608,10 +608,10 @@ M.lessons = {
         hint = 'v to start selection, then o flips the "active" end to the other side',
         optimal_solution = 'o — flip cursor to other end of selection',
       }),
-      -- Challenge 3: use gv then operate on it
+      -- Challenge 3: select then delete with visual mode
       h.editing({
-        command = 'gvd',
-        instruction = 'Re-select the last visual region and delete it with gvd',
+        command = 'v2ed',
+        instruction = 'Delete "THIS TEXT" using v2ed.',
         lines = {
           'Remove THIS TEXT from the line.',
         },
@@ -619,9 +619,9 @@ M.lessons = {
         expected = {
           'Remove  from the line.',
         },
-        optimal = 3,
+        optimal = 4,
         time = 8.0,
-        hint = 'Assume THIS TEXT was selected previously; gv restores it; d deletes it',
+        hint = 'v starts visual, 2e selects two words, d deletes them.',
       }),
     },
   },
