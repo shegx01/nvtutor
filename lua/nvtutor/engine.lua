@@ -268,6 +268,9 @@ function M.start_challenge(buf, win, challenge_def, challenge_num, total, on_don
   M._state.active_challenge = challenge_def
   M._state.completion_cb = on_done
 
+  -- Clean up any lingering floats from previous challenge feedback
+  ui().close_floats()
+
   -- Set up buffer using the explicit window handle
   M.setup_buffer(buf, challenge_def, win)
 
@@ -376,7 +379,8 @@ function M._finish_challenge(buf, skipped)
 
   if skipped then
     if M._state.completion_cb then
-      M._state.completion_cb({ skipped = true })
+      local cb = M._state.completion_cb
+      vim.schedule(function() cb({ skipped = true }) end)
     end
     return
   end
@@ -400,15 +404,19 @@ function M._finish_challenge(buf, skipped)
   -- Show feedback (with optional optimal solution text)
   ui().show_feedback(true, tier, keystrokes, challenge_def.optimal_keystrokes, elapsed, challenge_def.optimal_solution)
 
-  -- Callback (include whether optimal_solution was shown for timer adjustment)
+  -- Defer callback to a clean event loop tick so vim.defer_fn timers
+  -- inside the callback fire reliably (avoids stalling when called from
+  -- deep autocmd → vim.schedule → _finish_challenge chain).
   if M._state.completion_cb then
-    M._state.completion_cb({
+    local cb = M._state.completion_cb
+    local result = {
       skipped = false,
       keystrokes = keystrokes,
       time = elapsed,
       tier = tier,
       has_optimal = challenge_def.optimal_solution ~= nil,
-    })
+    }
+    vim.schedule(function() cb(result) end)
   end
 end
 
