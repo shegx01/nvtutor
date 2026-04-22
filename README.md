@@ -4,9 +4,11 @@ An interactive Neovim plugin that teaches Vim commands through hands-on challeng
 
 ## Features
 
-- **8 progressive chapters** (34 lessons, ~140 challenges) covering movement, editing, visual modes, the Vim language, search, and power commands
+- **9 progressive chapters** (61 lessons, ~200+ challenges) covering movement, editing, visual modes, the Vim language, search, power commands, and curated tricks
+- **Basic + Advanced tiers** -- each chapter has foundational lessons, then advanced lessons that unlock after mastering the basics
 - **Hybrid "teach then challenge" format** -- each lesson explains a concept, then presents 3-5 interactive challenges
 - **Mastery tiers** (bronze/silver/gold) based on keystroke efficiency and speed
+- **Optimal solution display** -- after completing a challenge, see the most efficient approach
 - **Chapter review rounds** that mix commands from prior chapters for reinforcement
 - **Final gauntlet** that tests all commands across every chapter
 - **Progress persistence** across sessions
@@ -46,7 +48,7 @@ Plug 'shegx01/nvtutor', { 'on': 'NVTutor' }
 ### [mini.deps](https://github.com/echasnovski/mini.deps)
 
 ```lua
-MiniDeps.add('shegx01/nvtutor')
+MiniDeps.add({ source = 'shegx01/nvtutor' })
 ```
 
 ### Manual
@@ -67,11 +69,11 @@ git clone https://github.com/shegx01/nvtutor.git \
 
 During challenges:
 
-| Key      | Action                              |
-|----------|-------------------------------------|
-| `Ctrl-L` | Retry the current challenge         |
-| `Ctrl-H` | Toggle hint (show/hide)             |
-| `Ctrl-N` | Skip to the next challenge          |
+| Key      | Action                                      |
+|----------|---------------------------------------------|
+| `Ctrl-L` | Retry the current challenge                 |
+| `Ctrl-H` | Toggle hint (when available for a challenge)|
+| `Ctrl-N` | Skip to the next challenge                  |
 
 No `setup()` call needed. Install the plugin and run `:NVTutor`.
 
@@ -87,8 +89,9 @@ No `setup()` call needed. Install the plugin and run `:NVTutor`.
 | 6  | **Document Navigation**    | `gg` `G` `Ctrl-d` `Ctrl-u`, `{n}G`, `{` `}`     |
 | 7  | **Search**                 | `/` `?` `n` `N`, `*` `#`                         |
 | 8  | **Power Commands**         | `Ctrl-a` `Ctrl-x`, macros, `%`, `.`, `J`, `~` `gu` `gU` |
+| 9  | **Vim Tricks**             | `cgn` formula, `xp`/`ddp`, `gf`/`gx`, `:g`/`:v`, config tips |
 
-Chapters unlock sequentially. Within an unlocked chapter, all lessons are freely accessible.
+Chapters unlock sequentially. Each chapter has **basic** and **advanced** (★) lessons. Advanced lessons unlock after completing all basic lessons in that chapter.
 
 ## How It Works
 
@@ -96,8 +99,9 @@ Chapters unlock sequentially. Within an unlocked chapter, all lessons are freely
 2. Each lesson starts with a **brief explanation**, then presents **3-5 interactive challenges**
 3. Challenges show **highlighted targets** in the buffer -- perform the correct Vim command to complete them
 4. You're scored on **keystrokes** (fewer = better) and **time**, earning bronze/silver/gold mastery
-5. Each chapter ends with a **review round** mixing commands from all prior chapters
-6. After all 8 chapters, a **final gauntlet** tests everything you've learned
+5. After completion, advanced challenges show the **optimal solution** so you learn the best approach
+6. Each chapter ends with a **review round** mixing commands from all prior chapters
+7. After all 9 chapters, a **final gauntlet** tests everything you've learned
 
 ## Scoring
 
