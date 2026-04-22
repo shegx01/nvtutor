@@ -1,5 +1,14 @@
 local M = {}
 
+--- Write to a debug log file (persists even if Neovim hangs)
+local function dbg(msg)
+  local f = io.open(vim.fn.stdpath('data') .. '/tutor/debug.log', 'a')
+  if f then
+    f:write(os.date('%H:%M:%S') .. ' ' .. msg .. '\n')
+    f:close()
+  end
+end
+
 --- Disable mini.nvim plugins on a practice buffer so users learn native Vim behavior.
 local function disable_mini_plugins(buf)
   vim.api.nvim_buf_set_var(buf, 'miniai_disable', true)
@@ -223,46 +232,56 @@ function M.start_lesson(chapter_n, lesson_n)
 end
 
 function M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx)
-  local chapters = require('nvtutor.chapters')
-  local engine = require('nvtutor.engine')
-  local progress = require('nvtutor.progress')
-  local lesson = chapters.get_lesson(chapter_n, lesson_n)
-  if not lesson or not lesson.challenges then
-    vim.notify(string.format('NVTutor: lesson Ch%d L%d not found', chapter_n, lesson_n), vim.log.levels.ERROR)
-    return
-  end
-
-  if challenge_idx > #lesson.challenges then
-    M.complete_lesson(chapter_n, lesson_n)
-    return
-  end
-
-  M._state.challenge_idx = challenge_idx
-
-  -- Save position
-  local state = progress.load()
-  state.current_challenge = challenge_idx
-  progress.save(state)
-
-  local challenge_def = lesson.challenges[challenge_idx]
-  local total = #lesson.challenges
-
-  engine.start_challenge(M._state.buf, M._state.win, challenge_def, challenge_idx, total, function(result)
-    if result.skipped then
-      -- Move to next challenge
-      M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
-    else
-      -- Record mastery
-      progress.mark_challenge_complete(
-        challenge_def.command, result.keystrokes, result.time, result.tier
-      )
-      -- Brief pause then next challenge (longer when optimal solution is shown)
-      local delay = result.has_optimal and 2500 or 1500
-      vim.defer_fn(function()
-        M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
-      end, delay)
+  dbg(string.format('start_challenge_sequence Ch%d L%d C%d', chapter_n, lesson_n, challenge_idx))
+  local ok, err = pcall(function()
+    local chapters = require('nvtutor.chapters')
+    local engine = require('nvtutor.engine')
+    local progress = require('nvtutor.progress')
+    local lesson = chapters.get_lesson(chapter_n, lesson_n)
+    if not lesson or not lesson.challenges then
+      dbg('ERROR: lesson not found')
+      vim.notify(string.format('NVTutor: lesson Ch%d L%d not found', chapter_n, lesson_n), vim.log.levels.ERROR)
+      return
     end
-  end)
+
+    if challenge_idx > #lesson.challenges then
+      dbg('all challenges done, completing lesson')
+      M.complete_lesson(chapter_n, lesson_n)
+      return
+    end
+
+    M._state.challenge_idx = challenge_idx
+
+    -- Save position
+    local state = progress.load()
+    state.current_challenge = challenge_idx
+    progress.save(state)
+
+    local challenge_def = lesson.challenges[challenge_idx]
+    local total = #lesson.challenges
+    dbg(string.format('starting engine challenge %d/%d: %s', challenge_idx, total, challenge_def.command or '?'))
+
+    engine.start_challenge(M._state.buf, M._state.win, challenge_def, challenge_idx, total, function(result)
+      dbg(string.format('challenge %d completed: skipped=%s', challenge_idx, tostring(result.skipped)))
+      if result.skipped then
+        M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
+      else
+        progress.mark_challenge_complete(
+          challenge_def.command, result.keystrokes, result.time, result.tier
+        )
+        local delay = result.has_optimal and 2500 or 1500
+        dbg(string.format('scheduling next challenge in %dms', delay))
+        vim.defer_fn(function()
+          dbg('defer_fn fired, advancing to next challenge')
+          M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
+        end, delay)
+      end
+    end)
+  end) -- pcall
+  if not ok then
+    dbg('ERROR in start_challenge_sequence: ' .. tostring(err))
+    vim.notify('NVTutor error: ' .. tostring(err), vim.log.levels.ERROR)
+  end
 end
 
 function M.complete_lesson(chapter_n, lesson_n)
