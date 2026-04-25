@@ -44,11 +44,19 @@ local function restore_native_keymaps(buf)
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
   end
 
-  -- mini.ai: vim.b.miniai_disable = true (set above) causes mini.ai's expr
-  -- mapping to fall back to native i/a text objects. The fallback at
-  -- mini/ai.lua:1294-1302 reconstructs the original key sequence (e.g. 'i"')
-  -- and returns it. This works correctly as long as we do NOT override the
-  -- mapping keys in miniai_config. No additional action needed here.
+  -- mini.ai: its global 'i'/'a' expr mappings use remap=true, causing infinite
+  -- recursion when the disable fallback returns 'i"' → re-triggers 'i' mapping.
+  -- Fix: buffer-local noremap expr mappings that capture the text object char
+  -- and feed the native sequence directly via nvim_feedkeys.
+  for _, prefix in ipairs({ 'i', 'a' }) do
+    vim.keymap.set({ 'o', 'x' }, prefix, function()
+      local char = vim.fn.getcharstr()
+      if char == '\27' then return '' end -- Esc cancels
+      -- Feed the native text object directly, bypassing all mappings ('n' flag)
+      vim.api.nvim_feedkeys(prefix .. char, 'n', false)
+      return ''
+    end, { buffer = buf, expr = true, noremap = true, desc = 'NVTutor: native ' .. prefix })
+  end
 end
 
 M._state = {
