@@ -44,21 +44,11 @@ local function restore_native_keymaps(buf)
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
   end
 
-  -- Neutralize mini.ai: tell it to use empty mappings on this buffer.
-  -- This disables mini.ai's 'i'/'a' operator-pending intercepts entirely,
-  -- letting native Vim text objects (ci", di(, daw) work unmodified.
-  pcall(vim.api.nvim_buf_set_var, buf, 'miniai_config', {
-    mappings = {
-      around = '',
-      inside = '',
-      around_next = '',
-      around_last = '',
-      inside_next = '',
-      inside_last = '',
-      goto_left = '',
-      goto_right = '',
-    },
-  })
+  -- mini.ai: vim.b.miniai_disable = true (set above) causes mini.ai's expr
+  -- mapping to fall back to native i/a text objects. The fallback at
+  -- mini/ai.lua:1294-1302 reconstructs the original key sequence (e.g. 'i"')
+  -- and returns it. This works correctly as long as we do NOT override the
+  -- mapping keys in miniai_config. No additional action needed here.
 end
 
 M._state = {
