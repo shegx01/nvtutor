@@ -1,14 +1,5 @@
 local M = {}
 
---- Write to a debug log file (persists even if Neovim hangs)
-local function dbg(msg)
-  local f = io.open(vim.fn.stdpath('data') .. '/tutor/debug.log', 'a')
-  if f then
-    f:write(os.date('%H:%M:%S') .. ' ' .. msg .. '\n')
-    f:close()
-  end
-end
-
 --- Disable mini.nvim plugins on a practice buffer so users learn native Vim behavior.
 local function disable_mini_plugins(buf)
   vim.api.nvim_buf_set_var(buf, 'miniai_disable', true)
@@ -16,38 +7,22 @@ local function disable_mini_plugins(buf)
   vim.api.nvim_buf_set_var(buf, 'minicomment_disable', true)
   vim.api.nvim_buf_set_var(buf, 'minipairs_disable', true)
   vim.api.nvim_buf_set_var(buf, 'miniindentscope_disable', true)
-  -- Disable other common plugins that interfere with practice
-  pcall(function() vim.api.nvim_buf_set_var(buf, 'autopairs_disable', true) end)
-  pcall(function() vim.api.nvim_buf_set_var(buf, 'cmp_disable', true) end)
-  -- Disable snacks.nvim features on practice buffer
-  pcall(function() vim.api.nvim_buf_set_var(buf, 'snacks_disable', true) end)
 end
 
 --- Restore native Vim keymaps that distributions (LazyVim, etc.) override globally.
 --- Buffer-local maps take precedence over global maps.
 local function restore_native_keymaps(buf)
   local natives = {
-    -- Screen motions (LazyVim remaps H/L to buffer switching)
-    'H', 'L', 'M',
-    -- Join lines (some configs remap to move line down)
-    'J',
-    -- Substitute (LazyVim maps s to flash.nvim/leap)
-    's', 'S',
-    -- Scrolling (plugins may remap for smooth scroll)
-    '<C-f>', '<C-b>', '<C-d>', '<C-u>',
-    -- Jump list
-    '<C-o>', '<C-i>',
-    -- Increment/decrement
-    '<C-a>', '<C-x>',
+    'H', 'L', 'M',                           -- screen motions
+    'J',                                       -- join lines
+    's', 'S',                                  -- substitute
+    '<C-f>', '<C-b>', '<C-d>', '<C-u>',       -- scrolling
+    '<C-o>', '<C-i>',                          -- jump list
+    '<C-a>', '<C-x>',                          -- increment/decrement
   }
   for _, key in ipairs(natives) do
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
   end
-
-  -- mini.ai: disable GLOBALLY while tutor is active. No buffer-local approach
-  -- works because mini.ai's global expr+remap 'i'/'a' mappings in o-mode
-  -- cannot be reliably overridden (tested: noremap, expr, feedkeys, config).
-  vim.g.miniai_disable = true
 end
 
 M._state = {
@@ -251,56 +226,42 @@ function M.start_lesson(chapter_n, lesson_n)
 end
 
 function M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx)
-  dbg(string.format('start_challenge_sequence Ch%d L%d C%d', chapter_n, lesson_n, challenge_idx))
-  local ok, err = pcall(function()
-    local chapters = require('nvtutor.chapters')
-    local engine = require('nvtutor.engine')
-    local progress = require('nvtutor.progress')
-    local lesson = chapters.get_lesson(chapter_n, lesson_n)
-    if not lesson or not lesson.challenges then
-      dbg('ERROR: lesson not found')
-      vim.notify(string.format('NVTutor: lesson Ch%d L%d not found', chapter_n, lesson_n), vim.log.levels.ERROR)
-      return
-    end
-
-    if challenge_idx > #lesson.challenges then
-      dbg('all challenges done, completing lesson')
-      M.complete_lesson(chapter_n, lesson_n)
-      return
-    end
-
-    M._state.challenge_idx = challenge_idx
-
-    -- Save position
-    local state = progress.load()
-    state.current_challenge = challenge_idx
-    progress.save(state)
-
-    local challenge_def = lesson.challenges[challenge_idx]
-    local total = #lesson.challenges
-    dbg(string.format('starting engine challenge %d/%d: %s', challenge_idx, total, challenge_def.command or '?'))
-
-    engine.start_challenge(M._state.buf, M._state.win, challenge_def, challenge_idx, total, function(result)
-      dbg(string.format('challenge %d completed: skipped=%s', challenge_idx, tostring(result.skipped)))
-      if result.skipped then
-        M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
-      else
-        progress.mark_challenge_complete(
-          challenge_def.command, result.keystrokes, result.time, result.tier
-        )
-        local delay = result.has_optimal and 2500 or 1500
-        dbg(string.format('scheduling next challenge in %dms', delay))
-        vim.defer_fn(function()
-          dbg('defer_fn fired, advancing to next challenge')
-          M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
-        end, delay)
-      end
-    end)
-  end) -- pcall
-  if not ok then
-    dbg('ERROR in start_challenge_sequence: ' .. tostring(err))
-    vim.notify('NVTutor error: ' .. tostring(err), vim.log.levels.ERROR)
+  local chapters = require('nvtutor.chapters')
+  local engine = require('nvtutor.engine')
+  local progress = require('nvtutor.progress')
+  local lesson = chapters.get_lesson(chapter_n, lesson_n)
+  if not lesson or not lesson.challenges then
+    vim.notify(string.format('NVTutor: lesson Ch%d L%d not found', chapter_n, lesson_n), vim.log.levels.ERROR)
+    return
   end
+
+  if challenge_idx > #lesson.challenges then
+    M.complete_lesson(chapter_n, lesson_n)
+    return
+  end
+
+  M._state.challenge_idx = challenge_idx
+
+  local state = progress.load()
+  state.current_challenge = challenge_idx
+  progress.save(state)
+
+  local challenge_def = lesson.challenges[challenge_idx]
+  local total = #lesson.challenges
+
+  engine.start_challenge(M._state.buf, M._state.win, challenge_def, challenge_idx, total, function(result)
+    if result.skipped then
+      M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
+    else
+      progress.mark_challenge_complete(
+        challenge_def.command, result.keystrokes, result.time, result.tier
+      )
+      local delay = result.has_optimal and 2500 or 1500
+      vim.defer_fn(function()
+        M.start_challenge_sequence(chapter_n, lesson_n, challenge_idx + 1)
+      end, delay)
+    end
+  end)
 end
 
 function M.complete_lesson(chapter_n, lesson_n)
@@ -400,9 +361,6 @@ function M._on_quit()
   -- Clean up UI
   local ui = require('nvtutor.ui')
   ui.teardown()
-
-  -- Re-enable mini.ai globally
-  vim.g.miniai_disable = false
 
   M._state.active = false
   M._state.buf = nil
