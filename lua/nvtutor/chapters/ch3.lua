@@ -58,19 +58,19 @@ M.lessons = {
       -- Challenge 4: yiw — yank inner word and paste
       h.vim_language({
         command = 'yiw',
-        instruction = 'Add "greet" at the end of line 2. Yank it with yiw then paste at end of line 2.',
+        instruction = 'Copy "greet" to line 2 so it reads "local fn = greet".',
         lines = {
           'function greet(name)',
-          'local fn = ',
+          'local fn =',
         },
         start = { 1, 9 },
         expected = {
           'function greet(name)',
           'local fn = greet',
         },
-        optimal = 6,
+        optimal = 7,
         time = 10.0,
-        hint = 'yiw yanks just the word; then navigate to line 2 end and p to paste',
+        hint = 'yiw yanks "greet". j moves to line 2. Use l or w to reach the end. Then a to append, type a space, Esc, then p to paste.',
       }),
       -- Challenge 5: ciw on a number
       h.vim_language({
