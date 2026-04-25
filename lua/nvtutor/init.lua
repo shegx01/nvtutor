@@ -46,15 +46,16 @@ local function restore_native_keymaps(buf)
 
   -- mini.ai: its global 'i'/'a' expr mappings use remap=true, causing infinite
   -- recursion when the disable fallback returns 'i"' → re-triggers 'i' mapping.
-  -- Fix: buffer-local noremap expr mappings that capture the text object char
-  -- and feed the native sequence directly via nvim_feedkeys.
+  -- Fix: buffer-local noremap+expr mappings that capture the text object char
+  -- and return the FULL native sequence 'i"' / 'a(' etc. Since noremap=true,
+  -- the returned string is interpreted as built-in keys, not remapped.
   for _, prefix in ipairs({ 'i', 'a' }) do
     vim.keymap.set({ 'o', 'x' }, prefix, function()
-      local char = vim.fn.getcharstr()
-      if char == '\27' then return '' end -- Esc cancels
-      -- Feed the native text object directly, bypassing all mappings ('n' flag)
-      vim.api.nvim_feedkeys(prefix .. char, 'n', false)
-      return ''
+      local ok, char = pcall(vim.fn.getcharstr)
+      if not ok or char == vim.api.nvim_replace_termcodes('<Esc>', true, false, true) then
+        return vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
+      end
+      return prefix .. char
     end, { buffer = buf, expr = true, noremap = true, desc = 'NVTutor: native ' .. prefix })
   end
 end
