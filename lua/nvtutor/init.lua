@@ -16,6 +16,11 @@ local function disable_mini_plugins(buf)
   vim.api.nvim_buf_set_var(buf, 'minicomment_disable', true)
   vim.api.nvim_buf_set_var(buf, 'minipairs_disable', true)
   vim.api.nvim_buf_set_var(buf, 'miniindentscope_disable', true)
+  -- Disable other common plugins that interfere with practice
+  pcall(function() vim.api.nvim_buf_set_var(buf, 'autopairs_disable', true) end)
+  pcall(function() vim.api.nvim_buf_set_var(buf, 'cmp_disable', true) end)
+  -- Disable snacks.nvim features on practice buffer
+  pcall(function() vim.api.nvim_buf_set_var(buf, 'snacks_disable', true) end)
 end
 
 --- Restore native Vim keymaps that distributions (LazyVim, etc.) override globally.
@@ -37,6 +42,14 @@ local function restore_native_keymaps(buf)
   }
   for _, key in ipairs(natives) do
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
+  end
+
+  -- Restore native text objects — mini.ai sets global operator-pending mappings
+  -- that override ci", di(, etc. Buffer-local maps shadow the globals.
+  local delimiters = { '"', "'", '`', '(', ')', '{', '}', '[', ']', '<', '>', 'w', 'W', 's', 'p', 'b', 'B', 't' }
+  for _, d in ipairs(delimiters) do
+    vim.keymap.set({ 'o', 'x' }, 'i' .. d, 'i' .. d, { buffer = buf, desc = 'NVTutor: native i' .. d })
+    vim.keymap.set({ 'o', 'x' }, 'a' .. d, 'a' .. d, { buffer = buf, desc = 'NVTutor: native a' .. d })
   end
 end
 
