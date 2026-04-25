@@ -44,19 +44,24 @@ local function restore_native_keymaps(buf)
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
   end
 
-  -- mini.ai: its global 'i'/'a' expr mappings use remap=true, causing infinite
-  -- recursion when the disable fallback returns 'i"' → re-triggers 'i' mapping.
-  -- Fix: buffer-local noremap+expr mappings that capture the text object char
-  -- and return the FULL native sequence 'i"' / 'a(' etc. Since noremap=true,
-  -- the returned string is interpreted as built-in keys, not remapped.
+  -- mini.ai: its global 'i'/'a' expr mappings in o-mode intercept text objects.
+  -- No o-mode override works reliably (expr results, feedkeys, noremap all fail).
+  -- Nuclear fix: map operator+prefix combos in NORMAL mode with noremap.
+  -- 'ci' as a noremap normal mapping processes 'c' then native 'i' — mini.ai's
+  -- o-mode 'i' mapping never fires because 'i' came from a noremap source.
+  local operators = { 'c', 'd', 'y', 'g' }
+  for _, op in ipairs(operators) do
+    for _, prefix in ipairs({ 'i', 'a' }) do
+      vim.keymap.set('n', op .. prefix, op .. prefix, {
+        buffer = buf, noremap = true, desc = 'NVTutor: native ' .. op .. prefix,
+      })
+    end
+  end
+  -- Also handle visual mode text objects (vi", va()
   for _, prefix in ipairs({ 'i', 'a' }) do
-    vim.keymap.set({ 'o', 'x' }, prefix, function()
-      local ok, char = pcall(vim.fn.getcharstr)
-      if not ok or char == vim.api.nvim_replace_termcodes('<Esc>', true, false, true) then
-        return vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
-      end
-      return prefix .. char
-    end, { buffer = buf, expr = true, noremap = true, desc = 'NVTutor: native ' .. prefix })
+    vim.keymap.set('x', prefix, prefix, {
+      buffer = buf, noremap = true, desc = 'NVTutor: native visual ' .. prefix,
+    })
   end
 end
 
