@@ -44,13 +44,19 @@ local function restore_native_keymaps(buf)
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
   end
 
-  -- Restore native text objects — mini.ai sets global operator-pending mappings
-  -- that override ci", di(, etc. Buffer-local maps shadow the globals.
-  local delimiters = { '"', "'", '`', '(', ')', '{', '}', '[', ']', '<', '>', 'w', 'W', 's', 'p', 'b', 'B', 't' }
-  for _, d in ipairs(delimiters) do
-    vim.keymap.set({ 'o', 'x' }, 'i' .. d, 'i' .. d, { buffer = buf, desc = 'NVTutor: native i' .. d })
-    vim.keymap.set({ 'o', 'x' }, 'a' .. d, 'a' .. d, { buffer = buf, desc = 'NVTutor: native a' .. d })
+  -- Neutralize mini.ai: it maps 'a' and 'i' as expr mappings in operator-pending
+  -- and visual modes. These intercept ci", di(, etc. before native Vim sees them.
+  -- Setting buffer-local non-expr, non-remap mappings that return the raw key
+  -- forces Vim to use native text objects on this buffer.
+  for _, mode in ipairs({ 'o', 'x' }) do
+    pcall(vim.keymap.del, mode, 'i', { buffer = buf })
+    pcall(vim.keymap.del, mode, 'a', { buffer = buf })
   end
+  -- Set clean buffer-local pass-through (noremap, no expr) so native i/a work
+  vim.keymap.set('o', 'i', 'i', { buffer = buf, noremap = true, desc = 'NVTutor: native inner' })
+  vim.keymap.set('o', 'a', 'a', { buffer = buf, noremap = true, desc = 'NVTutor: native around' })
+  vim.keymap.set('x', 'i', 'i', { buffer = buf, noremap = true, desc = 'NVTutor: native inner' })
+  vim.keymap.set('x', 'a', 'a', { buffer = buf, noremap = true, desc = 'NVTutor: native around' })
 end
 
 M._state = {
