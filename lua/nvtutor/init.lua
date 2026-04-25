@@ -44,25 +44,10 @@ local function restore_native_keymaps(buf)
     vim.keymap.set('n', key, key, { buffer = buf, desc = 'NVTutor: native ' .. key })
   end
 
-  -- mini.ai: its global 'i'/'a' expr mappings in o-mode intercept text objects.
-  -- No o-mode override works reliably (expr results, feedkeys, noremap all fail).
-  -- Nuclear fix: map operator+prefix combos in NORMAL mode with noremap.
-  -- 'ci' as a noremap normal mapping processes 'c' then native 'i' — mini.ai's
-  -- o-mode 'i' mapping never fires because 'i' came from a noremap source.
-  local operators = { 'c', 'd', 'y', 'g' }
-  for _, op in ipairs(operators) do
-    for _, prefix in ipairs({ 'i', 'a' }) do
-      vim.keymap.set('n', op .. prefix, op .. prefix, {
-        buffer = buf, noremap = true, desc = 'NVTutor: native ' .. op .. prefix,
-      })
-    end
-  end
-  -- Also handle visual mode text objects (vi", va()
-  for _, prefix in ipairs({ 'i', 'a' }) do
-    vim.keymap.set('x', prefix, prefix, {
-      buffer = buf, noremap = true, desc = 'NVTutor: native visual ' .. prefix,
-    })
-  end
+  -- mini.ai: disable GLOBALLY while tutor is active. No buffer-local approach
+  -- works because mini.ai's global expr+remap 'i'/'a' mappings in o-mode
+  -- cannot be reliably overridden (tested: noremap, expr, feedkeys, config).
+  vim.g.miniai_disable = true
 end
 
 M._state = {
@@ -415,6 +400,9 @@ function M._on_quit()
   -- Clean up UI
   local ui = require('nvtutor.ui')
   ui.teardown()
+
+  -- Re-enable mini.ai globally
+  vim.g.miniai_disable = false
 
   M._state.active = false
   M._state.buf = nil
