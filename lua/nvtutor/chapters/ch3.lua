@@ -70,7 +70,7 @@ M.lessons = {
         },
         optimal = 7,
         time = 10.0,
-        hint = 'yiw yanks "greet". j$ goes to end of line 2. a enters Insert after cursor. Space then Ctrl-r" pastes. Or use j$p after yiw and add a space.',
+        hint = 'yiw yanks "greet". j moves to line 2. Use l or w to reach the end. Then a to append, type a space, Esc, then p to paste.',
       }),
       -- Challenge 5: ciw on a number
       h.vim_language({
